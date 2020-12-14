@@ -4,6 +4,11 @@ $(function(){
       url: '/',
       data: {'type': '+'},
       type: 'POST',
+      success : function(response){
+        var temp_should = document.querySelector("#should");
+        var resp = JSON.parse(response)
+        temp_should.innerHTML = resp.temp_should
+      }
     });
   });
 });
@@ -14,6 +19,11 @@ $(function(){
       url: '/',
       data: {'type': '-'},
       type: 'POST',
+      success : function(response){
+        var temp_should = document.querySelector("#should");
+        var resp = JSON.parse(response)
+        temp_should.innerHTML = resp.temp_should
+      }
     });
   });
 });

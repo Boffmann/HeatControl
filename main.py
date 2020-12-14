@@ -33,7 +33,7 @@ def index():
                 superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running))
 
 
-        return json.dumps({'status': 'OK'})
+        return json.dumps({'status': 'OK', 'temp_should': temp_should.value, 'running': running.value})
     elif request.method == 'GET':
         return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
 
