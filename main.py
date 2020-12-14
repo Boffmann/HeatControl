@@ -35,13 +35,24 @@ def index():
 
         return json.dumps({'status': 'OK', 'temp_should': temp_should.value, 'running': running.value})
     elif request.method == 'GET':
-        return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
+        return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value, reload = time.time())
 
+@app.route('/temp_is', methods=['GET'])
+def get_temp_is():
+    global temp_is
+    response = app.response_class(
+        response=json.dumps({'success': True, 'value': temp_is.value}),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 def supervise(temp_is, temp_should, running):
     while(running.value):
+        temp_is.value += 1
         print("Value")
         print(temp_should.value)
+        print(temp_is.value)
         time.sleep(1)
 
 def main():

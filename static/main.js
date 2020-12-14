@@ -33,7 +33,30 @@ $(function(){
     $.ajax({
       url: '/',
       data: {'type': 'onoff'},
-      type: 'POST',
+      type: 'POST'
     });
   });
 });
+
+
+function periodically() {
+  $.ajax({
+    url: '/temp_is',
+    type: 'GET',
+    dataType: 'json',
+    contentType: "application/json",
+    success : function(data){
+      var temp_is = document.querySelector("#is");
+      temp_is.innerHTML = data.value;
+    },
+    error: function(error) {
+      console.log(error)
+    },
+    complete: function(response, textStatus) {
+      setTimeout(periodically, 1000);
+    }
+  });
+}
+
+setTimeout(periodically, 1000);
+
