@@ -1,9 +1,9 @@
 import time
 import multiprocessing
 from flask import Flask, render_template, request, json
-from src.heatcontrol.py import get_temperature, turn_on_heating, turn_off_heating
+from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating
 
-host='127.0.0.1'
+host='0.0.0.0'
 port='80'
 debug=True
 tolerance = 0.05
@@ -34,15 +34,15 @@ def index():
                 superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running))
 
 
-        return json.dumps({'status': 'OK', 'temp_should': temp_should.value, 'running': running.value})
+        return json.dumps({'status': 'OK'})
     elif request.method == 'GET':
         return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
 
 @app.route('/get_status', methods=['GET'])
-def get_temp_is():
-    global temp_is, running
+def get_status():
+    global temp_is, temp_should, running
     response = app.response_class(
-        response=json.dumps({'success': True, 'temp_is': temp_is.value, 'running': running.value}),
+        response=json.dumps({'success': True, 'temp_is': temp_is.value, 'temp_should': temp_should.value, 'running': running.value}),
         status=200,
         mimetype='application/json'
     )

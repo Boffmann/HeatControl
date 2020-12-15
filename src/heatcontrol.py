@@ -11,7 +11,7 @@ MOSI_PIN = board.MOSI
 CS_PIN = board.D22
 RELAIS_PIN = 27
 
-SPIO.setup(RELAIS_PIN, GPIO.OUT)
+GPIO.setup(RELAIS_PIN, GPIO.OUT)
 
 # Create SPI Bus
 spi = busio.SPI(clock=SCK_PIN, MISO=MISO_PIN, MOSI=MOSI_PIN)

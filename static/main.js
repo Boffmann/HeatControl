@@ -4,11 +4,6 @@ $(function(){
       url: '/',
       data: {'type': '+'},
       type: 'POST',
-      success : function(response){
-        var temp_should = document.querySelector("#should");
-        var resp = JSON.parse(response)
-        temp_should.innerHTML = resp.temp_should
-      }
     });
   });
 });
@@ -19,11 +14,6 @@ $(function(){
       url: '/',
       data: {'type': '-'},
       type: 'POST',
-      success : function(response){
-        var temp_should = document.querySelector("#should");
-        var resp = JSON.parse(response)
-        temp_should.innerHTML = resp.temp_should
-      }
     });
   });
 });
@@ -47,7 +37,10 @@ function periodically() {
     contentType: "application/json",
     success : function(data){
       var temp_is = document.querySelector("#is");
+	var temp_should = document.querySelector("should");
       temp_is.innerHTML = data.temp_is;
+	temp_should.innerHTML = data.temp_should;
+	
       if (data.running) {
         $("body").css({"backgroundColor": "#8ec07c"});
       } else {
