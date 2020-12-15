@@ -41,13 +41,18 @@ $(function(){
 
 function periodically() {
   $.ajax({
-    url: '/temp_is',
+    url: '/get_status',
     type: 'GET',
     dataType: 'json',
     contentType: "application/json",
     success : function(data){
       var temp_is = document.querySelector("#is");
-      temp_is.innerHTML = data.value;
+      temp_is.innerHTML = data.temp_is;
+      if (data.running) {
+        $("body").css({"backgroundColor": "#8ec07c"});
+      } else {
+        $("body").css({"backgroundColor": "#fb4934"});
+      }
     },
     error: function(error) {
       console.log(error)

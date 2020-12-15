@@ -21,7 +21,6 @@ def index():
 
     if request.method == 'POST':
         type = request.form['type']
-        print(type)
         if type == '+':
             temp_should.value += 1
         elif type == '-':
@@ -37,13 +36,13 @@ def index():
 
         return json.dumps({'status': 'OK', 'temp_should': temp_should.value, 'running': running.value})
     elif request.method == 'GET':
-        return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value, reload = time.time())
+        return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
 
-@app.route('/temp_is', methods=['GET'])
+@app.route('/get_status', methods=['GET'])
 def get_temp_is():
-    global temp_is
+    global temp_is, running
     response = app.response_class(
-        response=json.dumps({'success': True, 'value': temp_is.value}),
+        response=json.dumps({'success': True, 'temp_is': temp_is.value, 'running': running.value}),
         status=200,
         mimetype='application/json'
     )
