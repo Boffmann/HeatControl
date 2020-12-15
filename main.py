@@ -1,10 +1,12 @@
 import time
 import multiprocessing
 from flask import Flask, render_template, request, json
+from src.heatcontrol.py import get_temperature, turn_on_heating, turn_off_heating
 
 host='127.0.0.1'
 port='80'
 debug=True
+tolerance = 0.05
 
 temp_is = multiprocessing.Value('i')
 temp_should = multiprocessing.Value('i')
@@ -49,21 +51,21 @@ def get_temp_is():
 
 def supervise(temp_is, temp_should, running):
     while(running.value):
-        temp_is.value += 1
-        print("Value")
-        print(temp_should.value)
-        print(temp_is.value)
+        temp_is.value = get_temperature()
+        if (temp_is.value < (temp_should.value - temp_should.value * tolerance)):
+            turn_on_heating()
+        else:
+            turn_off_heating()
         time.sleep(1)
 
 def main():
     global temp_is, temp_should, running, superviser
 
-    temp_is.value = 20
+    temp_is.value = get_temperature()
     temp_should.value = 40
     running.value = True
-    print("Main")
-
     superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running))
+
 
     superviser.start()
 
