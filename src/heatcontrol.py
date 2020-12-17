@@ -1,3 +1,4 @@
+from typing import List
 import RPi.GPIO as GPIO
 import busio
 import digitalio
@@ -31,7 +32,7 @@ _channel3 = AnalogIn(_mcp, MCP.P3)
 def __value_to_temperature(value):
     return value * 100.0
 
-def get_temperature() -> float:
+def get_temps() -> List[float]:
     global _channel0, _channel1, _channel2, _channel3
 
     ch0 = __value_to_temperature(_channel0.value)
@@ -39,7 +40,12 @@ def get_temperature() -> float:
     ch2 = __value_to_temperature(_channel2.value)
     ch3 = __value_to_temperature(_channel3.value)
 
-    return (ch0 + ch1 + ch2 + ch3) / 4.0
+    return [ch0, ch1, ch2, ch3]
+
+def get_temperature() -> float:
+    temps = get_temps()
+
+    return (temps[0] + temps[1] + temps[2] + temps[3]) / 4.0
 
 def turn_on_heating():
     global _RELAIS_PIN

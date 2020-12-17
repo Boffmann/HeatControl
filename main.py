@@ -2,7 +2,7 @@ import time
 import multiprocessing
 from flask import Flask, render_template, request, json
 from typing import Dict
-from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating
+from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
 
 host='0.0.0.0'
 port='80'
@@ -63,6 +63,14 @@ def get_status():
     global temp_is, temp_should, running
     return create_json_response(
         response = {'success': True, 'temp_is': temp_is.value, 'temp_should': temp_should.value, 'running': running.value},
+        status = 200)
+
+@app.route('/temperatur', methods=['GET'])
+def get_curr_temps():
+    global temp_is, temp_should
+    temps = get_temps()
+    return create_json_response(
+        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1],'3': temps[2],'4': temps[3]},
         status = 200)
 
 def supervise(temp_is, temp_should, running):
