@@ -9,8 +9,8 @@ port='80'
 debug=True
 tolerance = 0.05
 
-temp_is = multiprocessing.Value('i')
-temp_should = multiprocessing.Value('i')
+temp_is = multiprocessing.Value('d')
+temp_should = multiprocessing.Value('d')
 running = multiprocessing.Value('b')
 superviser: multiprocessing.Process
 
@@ -23,9 +23,9 @@ def index():
     if request.method == 'POST':
         type = request.form['type']
         if type == '+':
-            temp_should.value += 1
+            temp_should.value += 1.0
         elif type == '-':
-            temp_should.value -= 1
+            temp_should.value -= 1.0
         elif type == 'onoff':
             running.value = not running.value
             if running.value == True:
@@ -87,7 +87,7 @@ def main():
     global temp_is, temp_should, running, superviser
 
     temp_is.value = get_temperature()
-    temp_should.value = 40
+    temp_should.value = 40.0
     running.value = False
 
     superviser = None
