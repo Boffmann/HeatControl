@@ -30,7 +30,10 @@ _channel2 = AnalogIn(_mcp, MCP.P2)
 _channel3 = AnalogIn(_mcp, MCP.P3)
 
 def __value_to_temperature(value):
-    return value * 100.0
+    supply_voltage = 4.5
+    max_digital_value = 64000
+    factor = 100.0
+    return (supply_voltage * (value / max_digital_value)) * factor
 
 def get_temps() -> List[float]:
     global _channel0, _channel1, _channel2, _channel3
