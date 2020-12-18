@@ -42,9 +42,12 @@ function check_status() {
       var isHeating = document.querySelector("#isHeating");
       if (data.running) {
         $("body").css({"backgroundColor": "#8ec07c"});
-        isHeating.innerHTML = "Heizt...";
       } else {
         $("body").css({"backgroundColor": "#fb4934"});
+      }
+      if (data.heating) {
+        isHeating.innerHTML = "Heizt...";
+      } else {
         isHeating.innerHTML = "";
       }
     },

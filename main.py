@@ -12,13 +12,14 @@ tolerance=0.05
 temp_is = multiprocessing.Value('d')
 temp_should = multiprocessing.Value('d')
 running = multiprocessing.Value('b')
+heating = multiprocessing.Value('b')
 superviser: multiprocessing.Process
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global temp_is, temp_should, running, superviser
+    global temp_is, temp_should, running, heating, superviser
 
     if request.method == 'POST':
         type = request.form['type']
@@ -30,7 +31,7 @@ def index():
             running.value = not running.value
             if running.value == True:
                 if superviser == None:
-                    superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running))
+                    superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running, heating))
                     try:
                         superviser.start()
                     except RuntimeError:
@@ -47,6 +48,7 @@ def index():
                             status = 500)
                     superviser = None
                     turn_off_heating()
+                    heating.value = False
                 except RuntimeError:
                     return create_json_response(
                         response = {'success': False, 'reason': 'Cannot stop. Process not running.'},
@@ -65,16 +67,16 @@ def round_dec_two(value: float):
 
 @app.route('/get_status', methods=['GET'])
 def get_status():
-    global temp_should, running
+    global temp_should, running, heating
     return create_json_response(
-        response = {'success': True, 'temp_should': round_dec_two(temp_should.value), 'running': running.value},
+        response = {'success': True, 'temp_should': round_dec_two(temp_should.value), 'running': running.value, 'heating': heating.value},
         status = 200)
 
 @app.route('/get_temp', methods=['GET'])
 def get_curr_temp():
     global temp_is, temp_should, running
     return create_json_response(
-        response = {'success': True, 'temp_is': round_dec_two(temp_is.value),
+        response = {'success': True, 'temp_is': round_dec_two(temp_is.value)},
         status = 200)
 
 @app.route('/temperatur', methods=['GET'])
@@ -86,14 +88,16 @@ def get_curr_temps():
         response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1],'3': temps[2],'4': temps[3]},
         status = 200)
 
-def supervise(temp_is, temp_should, running):
+def supervise(temp_is, temp_should, running, heating):
     while(running.value):
         temp_is.value = get_temperature()
         temp_is_rounded = int(round(temp_is.value)
         if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
             turn_on_heating()
+            heating.value = True
         elif (temp_is_rounded >= temp_should.value):
             turn_off_heating()
+            heating.value = False
         time.sleep(30)
 
 def create_json_response(response: Dict[str, object], status: int):
@@ -106,11 +110,12 @@ def create_json_response(response: Dict[str, object], status: int):
 
 
 def main():
-    global temp_is, temp_should, running, superviser
+    global temp_is, temp_should, running, heating, superviser
 
     temp_is.value = get_temperature()
     temp_should.value = 40.0
     running.value = False
+    heating.value = False
 
     superviser = None
 
