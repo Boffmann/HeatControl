@@ -46,6 +46,7 @@ def index():
                             response = {'success': False, 'reason': 'Failed to stop process.'},
                             status = 500)
                     superviser = None
+                    turn_off_heating()
                 except RuntimeError:
                     return create_json_response(
                         response = {'success': False, 'reason': 'Cannot stop. Process not running.'},
@@ -80,6 +81,7 @@ def get_curr_temp():
 def get_curr_temps():
     global temp_is, temp_should
     temps = get_temps()
+    temp_is.value = get_temperature()
     return create_json_response(
         response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1],'3': temps[2],'4': temps[3]},
         status = 200)

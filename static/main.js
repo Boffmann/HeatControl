@@ -39,10 +39,13 @@ function check_status() {
       var temp_should = document.querySelector("#should");
       temp_should.innerHTML = data.temp_should;
 
+      var isHeating = document.querySelector("#isHeating");
       if (data.running) {
         $("body").css({"backgroundColor": "#8ec07c"});
+        isHeating.innerHTML = "Heizt...";
       } else {
         $("body").css({"backgroundColor": "#fb4934"});
+        isHeating.innerHTML = "";
       }
     },
     error: function(error) {
