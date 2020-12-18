@@ -7,6 +7,7 @@ from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, 
 host='0.0.0.0'
 port='80'
 debug=True
+tolerance=0.05
 
 temp_is = multiprocessing.Value('d')
 temp_should = multiprocessing.Value('d')
@@ -86,9 +87,10 @@ def get_curr_temps():
 def supervise(temp_is, temp_should, running):
     while(running.value):
         temp_is.value = get_temperature()
-        if (temp_is.value < (temp_should.value)):
+        temp_is_rounded = int(round(temp_is.value)
+        if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
             turn_on_heating()
-        else:
+        elif (temp_is_rounded >= temp_should.value):
             turn_off_heating()
         time.sleep(30)
 
