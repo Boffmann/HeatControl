@@ -58,11 +58,15 @@ def index():
     elif request.method == 'GET':
         return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
 
+
+def round_dec_two(value: float):
+    return round(value, 2)
+
 @app.route('/get_status', methods=['GET'])
 def get_status():
     global temp_is, temp_should, running
     return create_json_response(
-        response = {'success': True, 'temp_is': temp_is.value, 'temp_should': temp_should.value, 'running': running.value},
+        response = {'success': True, 'temp_is': round_dec_two(temp_is.value), 'temp_should': round_dec_two(temp_should.value), 'running': running.value},
         status = 200)
 
 @app.route('/temperatur', methods=['GET'])
