@@ -91,7 +91,7 @@ def get_curr_temps():
 def supervise(temp_is, temp_should, running, heating):
     while(running.value):
         temp_is.value = get_temperature()
-        temp_is_rounded = int(round(temp_is.value)
+        temp_is_rounded = int(round(temp_is.value))
         if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
             turn_on_heating()
             heating.value = True
@@ -116,6 +116,8 @@ def main():
     temp_should.value = 40.0
     running.value = False
     heating.value = False
+
+    turn_off_heating()
 
     superviser = None
 
