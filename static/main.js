@@ -29,16 +29,14 @@ $(function(){
 });
 
 
-function periodically() {
+function check_status() {
   $.ajax({
     url: '/get_status',
     type: 'GET',
     dataType: 'json',
     contentType: "application/json",
     success : function(data){
-      var temp_is = document.querySelector("#is");
       var temp_should = document.querySelector("#should");
-      temp_is.innerHTML = data.temp_is;
       temp_should.innerHTML = data.temp_should;
 
       if (data.running) {
@@ -51,10 +49,30 @@ function periodically() {
       console.log(error)
     },
     complete: function(response, textStatus) {
-      setTimeout(periodically, 1000);
+      setTimeout(check_status, 1000);
     }
   });
 }
 
-setTimeout(periodically, 1000);
+function check_temp() {
+  $.ajax({
+    url: '/get_temp',
+    type: 'GET',
+    dataType: 'json',
+    contentType: "application/json",
+    success : function(data){
+      var temp_is = document.querySelector("#is");
+      temp_is.innerHTML = data.temp_is;
+    },
+    error: function(error) {
+      console.log(error)
+    },
+    complete: function(response, textStatus) {
+      setTimeout(check_temp, 30000);
+    }
+  });
+}
+
+setTimeout(check_status, 1000);
+setTimeout(check_temp, 1000);
 

@@ -7,7 +7,6 @@ from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, 
 host='0.0.0.0'
 port='80'
 debug=True
-tolerance = 0.05
 
 temp_is = multiprocessing.Value('d')
 temp_should = multiprocessing.Value('d')
@@ -64,9 +63,16 @@ def round_dec_two(value: float):
 
 @app.route('/get_status', methods=['GET'])
 def get_status():
+    global temp_should, running
+    return create_json_response(
+        response = {'success': True, 'temp_should': round_dec_two(temp_should.value), 'running': running.value},
+        status = 200)
+
+@app.route('/get_temp', methods=['GET'])
+def get_curr_temp():
     global temp_is, temp_should, running
     return create_json_response(
-        response = {'success': True, 'temp_is': round_dec_two(temp_is.value), 'temp_should': round_dec_two(temp_should.value), 'running': running.value},
+        response = {'success': True, 'temp_is': round_dec_two(temp_is.value),
         status = 200)
 
 @app.route('/temperatur', methods=['GET'])
@@ -80,11 +86,11 @@ def get_curr_temps():
 def supervise(temp_is, temp_should, running):
     while(running.value):
         temp_is.value = get_temperature()
-        if (temp_is.value < (temp_should.value - temp_should.value * tolerance)):
+        if (temp_is.value < (temp_should.value)):
             turn_on_heating()
         else:
             turn_off_heating()
-        time.sleep(1)
+        time.sleep(30)
 
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(
