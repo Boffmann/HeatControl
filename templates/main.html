@@ -2,7 +2,7 @@
 
 <html lang="en">
   <head>
-    <title>Honey Heatcontrol</title>
+    <title>Heater Pi</title>
     <link rel="stylesheet" type="text/css" href="static/main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
      <script src="static/main.js"></script>
@@ -10,13 +10,13 @@
 
   <body>
     <div id="content">
-      <div class="temp_display" id="div_is">Current Temperature: <b id="is">{{temp_is}}</b>°C</div>
+      <div class="temp_display" id="div_is">Gemessene Temperatur: <b id="is">{{temp_is}}</b>°C</div>
       <div id="temp_control">
         <button id='raise' type="button">+</button>
-        <div class="temp_display" id="div_should">Selected Temperature: <b id="should">{{temp_should}}</b>°C</div>
+        <div class="temp_display" id="div_should">Wunschtemperatur: <b id="should">{{temp_should}}</b>°C</div>
         <button id='lower' type="button">-</button>
       </div>
-      <button id='onoff' type="button">On/Off</button>
+      <button id='onoff' type="button">An/Aus</button>
     </div>
   </body>
 </html>
