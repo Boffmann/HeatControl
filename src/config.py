@@ -7,3 +7,6 @@ with open(config_file, 'r') as config_file:
 
 def ServerConfig():
     return config['server']
+
+def DatabaseConfig():
+    return config['database']

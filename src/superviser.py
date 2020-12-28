@@ -11,8 +11,8 @@ def _supervise(temp_is, temp_should, running, heating):
     logger.log(logging.INFO, "Superviser process started")
     # TODO
     while(state.is_running()):
+        state.update_temp_is()
         print(state.get_temp_should())
-#         # state.update_temp_is()
 #         # temp_is_rounded = int(round(state.get_temp_is()))
 #         # if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
 #         #     turn_on_heating()
