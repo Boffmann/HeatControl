@@ -1,7 +1,7 @@
-import time
 import logging
 from flask import Flask, render_template, request, json
 from flask.logging import default_handler
+from multiprocessing import Value
 from typing import Dict
 from src.logger import get_process_logger, flask_logger_config
 from src.config import ServerConfig
@@ -98,7 +98,15 @@ def create_json_response(response: Dict[str, object], status: int):
 def main():
     global state, superviser, logger
 
-    state = HeaterState(should=40.0, running=False, heating=False, logger=logger)
+    temp_is = Value('d')
+    temp_should = Value('d')
+    running = Value('b')
+    heating = Value('b')
+    temp_should.value = 40.0
+    running.value = False
+    heating.value = False
+
+    state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
     state.turn_off_heating()
 
     superviser = Superviser(state=state, logger=logger)

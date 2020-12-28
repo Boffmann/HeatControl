@@ -1,3 +1,4 @@
+import time
 import logging
 from multiprocessing import Process
 
@@ -5,10 +6,12 @@ from src.logger import get_process_logger
 from src.state import HeaterState
 
 def _supervise(temp_is, temp_should, running, heating):
+    state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
     logger = get_process_logger('superviser')
     logger.log(logging.INFO, "Superviser process started")
     # TODO
-#     while(state.is_running()):
+    while(state.is_running()):
+        print(state.get_temp_should())
 #         # state.update_temp_is()
 #         # temp_is_rounded = int(round(state.get_temp_is()))
 #         # if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
@@ -44,8 +47,7 @@ class Superviser():
                                              self._state._temp_should,
                                              self._state._running,
                                              self._state._heating))
-            # self._superviser = Process(target=_supervise)
-            self._start()
+            return self._start()
         self._logger.log(logging.WARNING, "Cannot start superviser twice")
         return False
 

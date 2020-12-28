@@ -1,21 +1,17 @@
 from multiprocessing import Value
-from logging import Logger
 
 # from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
 
 class HeaterState:
 
-    def __init__(self, should: float, running: bool, heating: bool, logger: Logger):
-        self._temp_is = Value('d')
-        self._temp_should = Value('d')
-        self._running = Value('b')
-        self._heating = Value('b')
-        self._logger = logger
+    def __init__(self, temp_is: Value('d'), should: Value('d'), running: Value('b'), heating: Value('b')):
+
+        self._temp_is = temp_is
+        self._temp_should = should
+        self._running = running
+        self._heating = heating
 
         self._temp_is.value = 20.0#get_temperature()
-        self._temp_should.value = should
-        self._running.value = running
-        self._heating.value = heating
 
     def is_running(self):
         return self._running.value
