@@ -94,4 +94,5 @@ __listener_process.start()
 
 def get_process_logger(name):
     logging.config.dictConfig(__config_log_writer)
-    return logging.getLogger(name)
+    logger = logging.getLogger(name)
+    return logger

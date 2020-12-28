@@ -6,10 +6,13 @@ from flask.logging import default_handler
 from typing import Dict
 from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
 from src.logger import get_process_logger, flask_logger_config
+from src.config import ServerConfig
 
-host='0.0.0.0'
-port='80'
-debug=True
+server_config = ServerConfig()
+
+host=server_config['host']
+port=server_config['port']
+debug=server_config['debug']
 tolerance=0.05
 
 temp_is = Value('d')
