@@ -1,25 +1,31 @@
 import time
-import multiprocessing
+import logging
+from multiprocessing import Process, Value
 from flask import Flask, render_template, request, json
+from flask.logging import default_handler
 from typing import Dict
 from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
+from src.logger import get_process_logger, flask_logger_config
 
 host='0.0.0.0'
 port='80'
 debug=True
 tolerance=0.05
 
-temp_is = multiprocessing.Value('d')
-temp_should = multiprocessing.Value('d')
-running = multiprocessing.Value('b')
-heating = multiprocessing.Value('b')
-superviser: multiprocessing.Process
+temp_is = Value('d')
+temp_should = Value('d')
+running = Value('b')
+heating = Value('b')
+superviser: Process
+
+logger = get_process_logger('server')
 
 app = Flask(__name__)
+logging.config.dictConfig(flask_logger_config)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    global temp_is, temp_should, running, heating, superviser
+    global temp_is, temp_should, running, heating, superviser, logger
 
     if request.method == 'POST':
         type = request.form['type']
@@ -31,11 +37,12 @@ def index():
             running.value = not running.value
             if running.value == True:
                 if superviser == None:
-                    superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running, heating))
+                    superviser = Process(target=supervise, args=(temp_is, temp_should, running, heating))
                     try:
                         superviser.start()
                     except RuntimeError:
                         superviser = None
+                        logger.log(logging.ERROR, "Cannot stop process - Process already running")
                         return create_json_response(
                             response = {'success': False, 'reason': 'Process already running'},
                             status = 500)
@@ -43,6 +50,7 @@ def index():
                 try:
                     superviser.join(timeout=5)
                     if superviser is not None and superviser.is_alive():
+                        logger.log(logging.ERROR, "Cannot stop process - Still alive after timeout")
                         return create_json_response(
                             response = {'success': False, 'reason': 'Failed to stop process.'},
                             status = 500)
@@ -50,10 +58,12 @@ def index():
                     turn_off_heating()
                     heating.value = False
                 except RuntimeError:
+                    logger.log(logging.ERROR, "Cannot stop process - Process wasn't running")
                     return create_json_response(
                         response = {'success': False, 'reason': 'Cannot stop. Process not running.'},
                         status = 500)
 
+        logger.log(logging.INFO, "Superviser stopped successfully")
         return create_json_response(
             response = {'success': True},
             status = 200
@@ -89,6 +99,8 @@ def get_curr_temps():
         status = 200)
 
 def supervise(temp_is, temp_should, running, heating):
+    logger = get_process_logger('superviser')
+    logger.log(logging.INFO, "Superviser process started")
     while(running.value):
         temp_is.value = get_temperature()
         temp_is_rounded = int(round(temp_is.value))
