@@ -29,10 +29,16 @@ flask_logger_config = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler'
+        },
+        'errors': {
+            'class': 'logging.FileHandler',
+            'filename': 'server-errors.log',
+            'mode': 'a',
+            'level': 'ERROR'
         }
     },
     'root': {
-        'handlers': ['console'],
+        'handlers': ['console', 'errors'],
     }
 }
 
