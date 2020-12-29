@@ -21,7 +21,7 @@ def _supervise(temp_is, temp_should, running, heating):
 #         #     turn_off_heating()
 #         #     heating.value = False
 #         # time.sleep(30)
-#         time.sleep(1)
+        time.sleep(1)
 
 class Superviser():
 

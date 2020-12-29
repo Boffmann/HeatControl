@@ -12,7 +12,7 @@ class HeaterState:
         self._running = running
         self._heating = heating
 
-        self._temp_is.value = 20.0#get_temperature()
+        self._temp_is.value = 15.0#get_temperature()
         self._db_conn = DBConnection()
 
     def is_running(self):
