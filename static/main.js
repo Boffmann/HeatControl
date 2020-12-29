@@ -2,7 +2,7 @@
 // var socket = io.connect('http://' + document.domain + ':' + location.port);
 var socket = io('/state')
 socket.on('connect', function() {
-    socket.emit('client_connected');
+  // Pass
 });
 
 socket.on('state', function(data) {
@@ -22,9 +22,9 @@ socket.on('state', function(data) {
   }
 });
 
-socket.on('temp_is', function(temp_is) {
+socket.on('temp_is', function(data) {
   var temp_is = document.querySelector("#is");
-  temp_is.innerHTML = temp_is;
+  temp_is.innerHTML = data.temp_is;
 });
 
 $(function(){
