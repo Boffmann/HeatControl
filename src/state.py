@@ -1,4 +1,5 @@
 from multiprocessing import Value
+import random
 
 # from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
 
@@ -26,8 +27,8 @@ class HeaterState:
         return self._temp_should.value
 
     def update_temp_is(self):
-        self._temp_is.value = 20.0#get_temperature()
-        self._db_conn.insert_temp(self._temp_is.value)
+        # self._temp_is.value = 20.0#get_temperature()
+        self._temp_is.value = random.randint(1, 101)
 
     def increate_temp_should(self):
         self._temp_should.value += 1.0

@@ -11,7 +11,7 @@ from src.superviser import Superviser
 from src.socket import StateSocket
 from src.history import DBConnection
 from src.historySocket import HistorySocket
-from src.utils import round_dec_two
+from src.utils import round_dec_two, get_curr_time
 
 server_config = ServerConfig()
 
@@ -58,7 +58,8 @@ def get_curr_temps():
 def manage_superviser():
     global state
     if state.is_running() == True:
-        superviser.start()
+        if superviser.start():
+            history_socket.set_starttime(get_curr_time())
     else:
         superviser.stop()
 
@@ -85,7 +86,7 @@ def main():
 
     db_conn = DBConnection()
     db_conn.prepare_tables()
-
+    db_conn.close()
 
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
     state.turn_off_heating()
@@ -96,6 +97,7 @@ def main():
     status_socket._start_stop_superviser = manage_superviser
 
     history_socket._state = state
+    history_socket.set_starttime(get_curr_time())
 
     # app.run(host=host, port=port, debug=debug, use_reloader=False)
     socketio.run(app, host=host, port=port, debug=debug)
