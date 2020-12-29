@@ -58,7 +58,7 @@ __config_log_listener = {
         'file': {
             'class': 'logging.FileHandler',
             'filename': 'server.log',
-            'mode': 'w',
+            'mode': 'a',
             'formatter': 'detailed'
         },
         'errors': {

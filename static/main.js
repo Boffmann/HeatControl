@@ -1,5 +1,3 @@
-
-// var socket = io.connect('http://' + document.domain + ':' + location.port);
 var socket = io('/state')
 socket.on('connect', function() {
   // Pass

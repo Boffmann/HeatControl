@@ -9,6 +9,8 @@ from src.config import ServerConfig
 from src.state import HeaterState
 from src.superviser import Superviser
 from src.socket import StateSocket
+from src.history import DBConnection
+from src.historySocket import HistorySocket
 from src.utils import round_dec_two
 
 server_config = ServerConfig()
@@ -29,6 +31,8 @@ app.config['SECRET_KEY'] = 'super_secret'
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 status_socket = StateSocket('/state')
 socketio.on_namespace(status_socket)
+history_socket = HistorySocket('/history')
+socketio.on_namespace(history_socket)
 
 # Sets the flask logger back to Stream Handler to prevent it from writing into the log file
 logging.config.dictConfig(flask_logger_config)
@@ -40,7 +44,7 @@ def index():
 
 @app.route('/history', methods=['GET'])
 def history():
-    return None
+    return render_template('history.html')
 
 @app.route('/temperatur', methods=['GET'])
 def get_curr_temps():
@@ -79,6 +83,10 @@ def main():
     running.value = False
     heating.value = False
 
+    db_conn = DBConnection()
+    db_conn.prepare_tables()
+
+
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
     state.turn_off_heating()
 
@@ -86,6 +94,8 @@ def main():
 
     status_socket._state = state
     status_socket._start_stop_superviser = manage_superviser
+
+    history_socket._state = state
 
     # app.run(host=host, port=port, debug=debug, use_reloader=False)
     socketio.run(app, host=host, port=port, debug=debug)

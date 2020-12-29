@@ -1,6 +1,5 @@
 from multiprocessing import Value
 
-from src.history import DBConnection
 # from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
 
 class HeaterState:
@@ -13,7 +12,6 @@ class HeaterState:
         self._heating = heating
 
         self._temp_is.value = 15.0#get_temperature()
-        self._db_conn = DBConnection()
 
     def is_running(self):
         return self._running.value

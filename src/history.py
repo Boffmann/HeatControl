@@ -1,14 +1,10 @@
 import sqlite3
-import time
 
 from src.config import DatabaseConfig
+from src.utils import get_curr_time
 
 database_config = DatabaseConfig()
 
-
-def get_curr_time():
-    ts = time.time()
-    return int(round(ts))
 
 class DBConnection:
 
@@ -16,11 +12,20 @@ class DBConnection:
         self._db_conn = sqlite3.connect(database_config['filename'])
         self._conn = self._db_conn.cursor()
         # Create table
+
+    def prepare_tables(self):
         self._conn.execute("CREATE TABLE IF NOT EXISTS temps (date integer, temp real);")
 
     def insert_temp(self, temp: float):
         self._conn.execute("INSERT INTO temps VALUES (?, ?);", (get_curr_time(), temp))
         self._db_conn.commit()
+
+    def get_since(self, timestamp: int):
+        # self._conn.execute("SELECT date, temp FROM temps WHERE date >= ? ORDER BY date ASC")
+        print("Get since DB")
+        self._conn.execute("SELECT * FROM temps;")
+        print("Selected")
+        return self._conn.fetchall()
 
     def close(self):
         self._db_conn.close()
