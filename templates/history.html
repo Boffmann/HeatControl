@@ -3,12 +3,21 @@
 <html lang="en">
   <head>
     <title>History</title>
-     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-     <script src="static/Chart.bundle.min.js"></script>
-     <script src="static/history.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/navbar.css">
+    <link rel="stylesheet" type="text/css" href="static/history.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script src="static/Chart.bundle.min.js"></script>
+    <script src="static/history.js"></script>
   </head>
 
   <body>
+    <div id="navbar">
+      <ul>
+        <li><a href="/">Startseite</a></li>
+        <li><a class="active">Graph</a></li>
+      </ul>
+    </div>
+
     <canvas id="canvas"></canvas>
   </body>
 

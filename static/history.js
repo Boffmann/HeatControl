@@ -6,6 +6,9 @@ var chart_config = {
   },
   options: {
     responsive: true,
+    legend: {
+      display: false
+    },
     plugins: {
       title: {
         display: true,
