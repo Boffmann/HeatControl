@@ -12,13 +12,10 @@ def _supervise(temp_is, temp_should, running, heating):
     logger.log(logging.INFO, "Superviser process started")
     s_socket = socketio.Client()
     s_socket.connect("http://localhost:80", namespaces=['/state'])
-    h_socket = socketio.Client()
-    h_socket.connect("http://localhost:80/history", namespaces=['/history'])
     # TODO
     while(state.is_running()):
         state.update_temp_is()
         s_socket.emit('temp_is_updated', namespace='/state')
-        h_socket.emit('temp_is_updated', namespace='/history')
 #         # temp_is_rounded = int(round(state.get_temp_is()))
 #         # if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
 #         #     turn_on_heating()

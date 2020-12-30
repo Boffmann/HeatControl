@@ -21,10 +21,7 @@ class DBConnection:
         self._db_conn.commit()
 
     def get_since(self, timestamp: int):
-        print("Get since DB")
-        # self._conn.execute("SELECT * FROM temps;")
         self._conn.execute("SELECT date, temp FROM temps WHERE date >= ? ORDER BY date ASC;", (timestamp,))
-        print("Selected")
         return self._conn.fetchall()
 
     def close(self):

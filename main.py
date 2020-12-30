@@ -10,7 +10,6 @@ from src.state import HeaterState
 from src.superviser import Superviser
 from src.socket import StateSocket
 from src.history import DBConnection
-from src.historySocket import HistorySocket
 from src.utils import round_dec_two, get_curr_time
 
 server_config = ServerConfig()
@@ -31,8 +30,6 @@ app.config['SECRET_KEY'] = 'super_secret'
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 status_socket = StateSocket('/state')
 socketio.on_namespace(status_socket)
-history_socket = HistorySocket('/history')
-socketio.on_namespace(history_socket)
 
 # Sets the flask logger back to Stream Handler to prevent it from writing into the log file
 logging.config.dictConfig(flask_logger_config)
@@ -59,7 +56,7 @@ def manage_superviser():
     global state
     if state.is_running() == True:
         if superviser.start():
-            history_socket.set_starttime(get_curr_time())
+            status_socket.set_starttime(get_curr_time())
     else:
         superviser.stop()
 
@@ -95,9 +92,7 @@ def main():
 
     status_socket._state = state
     status_socket._start_stop_superviser = manage_superviser
-
-    history_socket._state = state
-    history_socket.set_starttime(get_curr_time())
+    status_socket.set_starttime(get_curr_time())
 
     # app.run(host=host, port=port, debug=debug, use_reloader=False)
     socketio.run(app, host=host, port=port, debug=debug)

@@ -4,5 +4,4 @@ server:
   debug: True
 
 database:
-  # filename: ':memory:'
   filename: 'heater.db'

@@ -1,4 +1,4 @@
-var socket = io('/history')
+var socket = io('/state')
 socket.on('connect', function() {
   socket.emit('get_since_start')
 });
