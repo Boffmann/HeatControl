@@ -1,7 +1,6 @@
 import sqlite3
 
 from src.config import DatabaseConfig
-from src.utils import get_curr_time
 
 database_config = DatabaseConfig()
 
@@ -16,8 +15,8 @@ class DBConnection:
     def prepare_tables(self):
         self._conn.execute("CREATE TABLE IF NOT EXISTS temps (date integer, temp real);")
 
-    def insert_temp(self, temp: float):
-        self._conn.execute("INSERT INTO temps VALUES (?, ?);", (get_curr_time(), temp))
+    def insert_temp(self, timestamp: int, temp: float):
+        self._conn.execute("INSERT INTO temps VALUES (?, ?);", (timestamp, temp))
         self._db_conn.commit()
 
     def get_since(self, timestamp: int):

@@ -1,7 +1,7 @@
 from flask_socketio import SocketIO, Namespace, emit
 
 from src.state import HeaterState
-from src.utils import round_dec_two
+from src.utils import round_dec_two, get_curr_time
 from src.history import DBConnection
 
 class StateSocket(Namespace):
@@ -37,16 +37,14 @@ class StateSocket(Namespace):
         db_conn = DBConnection()
         rows = db_conn.get_since(self._start_time)
         emit('since_start', {'values': rows})
-
-        for row in rows:
-           print(row)
         db_conn.close()
 
     def on_temp_is_updated(self):
         db_conn = DBConnection()
         temp_is = self._state.get_temp_is()
-        db_conn.insert_temp(temp_is)
-        emit('temp_is', {'temp_is': temp_is}, broadcast=True)
+        curr_time = get_curr_time()
+        db_conn.insert_temp(curr_time, temp_is)
+        emit('temp_is', {'timestamp': curr_time, 'temp_is': temp_is}, broadcast=True)
         db_conn.close()
 
     def publish_state(self):
