@@ -1,4 +1,5 @@
 from multiprocessing import Value
+import socketio
 
 # from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps, turn_on_fan, turn_off_fan
 from src.utils import get_time_to_heat
@@ -12,7 +13,12 @@ class HeaterState:
         self._running = running
         self._heating = heating
 
+        self._socket = socketio.Client()
+
         self._temp_is.value = 15.0#get_temperature()
+
+    def connect_to_socket(self):
+        self._socket.connect("http://localhost:80", namespaces=['/state'])
 
     def is_running(self):
         return self._running.value
@@ -35,6 +41,7 @@ class HeaterState:
 
     def update_temp_is(self):
         self._temp_is.value = 20.0#get_temperature()
+        self._socket.emit('temp_is_updated', namespace='/state')
 
     def increate_temp_should(self):
         self._temp_should.value += 1.0
@@ -48,10 +55,12 @@ class HeaterState:
     def turn_off_heating(self):
         #turn_off_heating()
         self._heating.value = False
+        self._socket.emit('heating', namespace='/state')
 
     def turn_on_heating(self):
         #turn_on_heating()
         self._heating.value = True
+        self._socket.emit('heating', namespace='/state')
 
     def turn_on_fan(self):
         # turn_on_fan()

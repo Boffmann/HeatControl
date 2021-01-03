@@ -80,7 +80,6 @@ def main():
     db_conn.close()
 
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
-    state.turn_off_heating()
 
     superviser = Superviser(state=state)
 
@@ -88,8 +87,12 @@ def main():
     status_socket._start_stop_superviser = manage_superviser
     status_socket.set_starttime(get_curr_time())
 
-    # app.run(host=host, port=port, debug=debug, use_reloader=False)
     socketio.run(app, host=host, port=port, debug=debug)
+
+    state.connect_to_socket()
+    state.turn_off_heating()
+
+    # app.run(host=host, port=port, debug=debug, use_reloader=False)
 
 if __name__ == '__main__':
     main()

@@ -47,5 +47,8 @@ class StateSocket(Namespace):
         emit('temp_is', {'timestamp': curr_time, 'temp_is': temp_is}, broadcast=True)
         db_conn.close()
 
+    def on_heating(self):
+        self.publish_state()
+
     def publish_state(self):
         emit('state', {'temp_should': round_dec_two(self._state.get_temp_should()), 'running': self._state.is_running(), 'heating': self._state.is_heating()}, broadcast=True)

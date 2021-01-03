@@ -1,5 +1,4 @@
 import time
-import socketio
 from multiprocessing import Process
 from enum import Enum
 
@@ -11,14 +10,13 @@ class Phase(Enum):
     APPROACH_HEAT = 2
     KEEP_HEAT = 3
 
+# TODO inform about changed heating variable
 def _supervise(temp_is, temp_should, running, heating):
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
+    state.connect_to_socket()
     mylogger.info("Superviser process started")
-    s_socket = socketio.Client()
-    s_socket.connect("http://localhost:80", namespaces=['/state'])
 
     state.update_temp_is()
-    s_socket.emit('temp_is_updated', namespace='/state')
     if (state.should_preheat()):
         phase = Phase.PREHEAT
     elif (state.should_approach_heat()):
@@ -28,7 +26,6 @@ def _supervise(temp_is, temp_should, running, heating):
 
     while(state.is_running()):
         state.update_temp_is()
-        s_socket.emit('temp_is_updated', namespace='/state')
 
         if (phase == Phase.PREHEAT):
             if (state.should_preheat()):
@@ -97,9 +94,9 @@ class Superviser():
 
     def stop(self) -> bool:
         try:
+            self._superviser.terminate()
             self._superviser.join(timeout=5)
             if self._superviser is not None and self._superviser.is_alive():
-                # TODO This log is not written
                 mylogger.error("Cannot stop process - Still alive after timeout")
                 return False
             self._superviser = None
