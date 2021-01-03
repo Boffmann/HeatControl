@@ -10,3 +10,6 @@ def ServerConfig():
 
 def DatabaseConfig():
     return config['database']
+
+def InterfaceConfig():
+    return config['interface']
