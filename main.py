@@ -1,10 +1,9 @@
 import logging
 from flask import Flask, render_template, request, json
-from flask.logging import default_handler
 from flask_socketio import SocketIO, emit
 from multiprocessing import Value
 from typing import Dict
-from src.logger import get_process_logger, flask_logger_config
+import src.logging as mylogger
 from src.config import ServerConfig
 from src.state import HeaterState
 from src.superviser import Superviser
@@ -22,8 +21,6 @@ tolerance=0.05
 state: HeaterState
 superviser: Superviser
 
-logger = get_process_logger('server')
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super_secret'
 
@@ -31,12 +28,9 @@ socketio = SocketIO(app, logger=True, engineio_logger=True)
 status_socket = StateSocket('/state')
 socketio.on_namespace(status_socket)
 
-# Sets the flask logger back to Stream Handler to prevent it from writing into the log file
-logging.config.dictConfig(flask_logger_config)
-
 @app.route('/', methods=['GET'])
 def index():
-    global state, superviser, logger
+    global state, superviser
     return render_template('main.html', temp_is=state.get_temp_is(), temp_should=state.get_temp_should())
 
 @app.route('/history', methods=['GET'])
@@ -60,7 +54,7 @@ def manage_superviser():
     else:
         superviser.stop()
 
-    logger.log(logging.INFO, "Superviser stopped successfully")
+    mylogger.info("Superviser stopped successfully")
 
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(
@@ -71,7 +65,7 @@ def create_json_response(response: Dict[str, object], status: int):
     return response
 
 def main():
-    global state, superviser, logger, status_socket
+    global state, superviser, status_socket
 
     temp_is = Value('d')
     temp_should = Value('d')
@@ -88,7 +82,7 @@ def main():
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
     state.turn_off_heating()
 
-    superviser = Superviser(state=state, logger=logger)
+    superviser = Superviser(state=state)
 
     status_socket._state = state
     status_socket._start_stop_superviser = manage_superviser

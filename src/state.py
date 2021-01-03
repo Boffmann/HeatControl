@@ -27,8 +27,8 @@ class HeaterState:
         return self.get_temp_is() < self.get_temp_should() - 5.0
 
     def should_approach_heat(self):
-        return self.get_temp_is() >= self.get_temp_should() - 5.0 and
-               self.get_temp_is() <  self.get_temp_should()
+        return (self.get_temp_is() >= self.get_temp_should() - 5.0
+                and self.get_temp_is() <  self.get_temp_should())
 
     def get_temp_should(self):
         return self._temp_should.value

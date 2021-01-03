@@ -1,10 +1,9 @@
 import time
-import logging
 import socketio
 from multiprocessing import Process
 from enum import Enum
 
-from src.logger import get_process_logger
+import src.logging as mylogger
 from src.state import HeaterState
 
 class Phase(Enum):
@@ -14,8 +13,7 @@ class Phase(Enum):
 
 def _supervise(temp_is, temp_should, running, heating):
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
-    logger = get_process_logger('superviser')
-    logger.log(logging.INFO, "Superviser process started")
+    mylogger.info("Superviser process started")
     s_socket = socketio.Client()
     s_socket.connect("http://localhost:80", namespaces=['/state'])
 
@@ -72,17 +70,16 @@ def _supervise(temp_is, temp_should, running, heating):
 
 class Superviser():
 
-    def __init__(self, state: HeaterState, logger: logging.Logger):
+    def __init__(self, state: HeaterState):
         self._superviser: Process = None
         self._state = state
-        self._logger = logger
 
     def _start(self):
         try:
             self._superviser.start()
         except RuntimeError:
             self._superviser = None
-            self._logger.log(logging.ERROR, "Cannot stop process - Process already running")
+            mylogger.error("Cannot stop process - Process already running")
             return False
 
         return True
@@ -95,7 +92,7 @@ class Superviser():
                                              self._state._running,
                                              self._state._heating))
             return self._start()
-        self._logger.log(logging.WARNING, "Cannot start superviser twice")
+        mylogger.warning("Cannot start superviser twice")
         return False
 
     def stop(self) -> bool:
@@ -103,17 +100,14 @@ class Superviser():
             self._superviser.join(timeout=5)
             if self._superviser is not None and self._superviser.is_alive():
                 # TODO This log is not written
-                self._logger.log(logging.ERROR, "Cannot stop process - Still alive after timeout")
-                print("Err 1")
+                mylogger.error("Cannot stop process - Still alive after timeout")
                 return False
             self._superviser = None
             #self._state.turn_off_heating()
         except RuntimeError:
-            self._logger.log(logging.ERROR, "Cannot stop process - Process wasn't running")
-            print("Err 2")
+            mylogger.error("Cannot stop process - Process wasn't running")
             return False
 
-        print("Succ 1")
         return True
 
 
