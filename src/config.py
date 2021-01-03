@@ -13,3 +13,6 @@ def DatabaseConfig():
 
 def InterfaceConfig():
     return config['interface']
+
+def EnvironmentConfig():
+    return config['environment']
