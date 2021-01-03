@@ -4,7 +4,13 @@ html, body {
   height: 100vh;
 }
 
+#content {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+}
+
 #canvas {
-  height: 90vh;
-  width: 90vw;
+  height: 90vh !important;
+  width: 90vw !important;
 }
