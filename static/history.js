@@ -6,15 +6,6 @@ var chart_config = {
   },
   options: {
     responsive: true,
-    scales: {
-      xAxes: [{
-        ticks: {
-          autoSkip: false,
-          maxRotation: 90,
-          minRotation: 90
-        }
-      }]
-    },
     legend: {
       display: false
     },
@@ -33,6 +24,11 @@ var chart_config = {
       intersect: false
     },
     scales: {
+      xAxes: [{
+        ticks: {
+          maxTicksLimit: 30
+        }
+      }],
       x: {
         display: true,
         scaleLabel: {

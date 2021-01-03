@@ -63,7 +63,7 @@ def _supervise(temp_is, temp_should, running, heating):
                 state.turn_off_heating()
                 time.sleep(20)
                 state.turn_off_fan()
-                time.sleep(60 - 20 - time_heating)
+                time.sleep(600 - 20 - time_heating)
 
 class Superviser():
 
