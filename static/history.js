@@ -6,6 +6,15 @@ var chart_config = {
   },
   options: {
     responsive: true,
+    scales: {
+      xAxes: [{
+        ticks: {
+          autoSkip: false,
+          maxRotation: 90,
+          minRotation: 90
+        }
+      }]
+    },
     legend: {
       display: false
     },
@@ -42,6 +51,17 @@ var chart_config = {
   }
 };
 
+to_date_string = function(timestamp) {
+  var date = new Date(timestamp * 1000);
+  var hours = "0" + date.getHours();
+  var minutes = "0" + date.getMinutes();
+  var seconds = "0" + date.getSeconds();
+  var day = "0" + date.getDate();
+  var month = "0" + date.getMonth() + 1;
+
+  return day.substr(-2) + "." + month.substr(-2) + ". " + hours.substr(-2) + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
+}
+
 var socket = io('/state')
 socket.on('connect', function() {
   socket.emit('get_since_start')
@@ -64,7 +84,7 @@ socket.on('since_start', function(data) {
   };
 
   values.forEach(function(item, index) {
-    chart_config.data.labels.push(item[0]);
+    chart_config.data.labels.push(to_date_string(item[0]));
     newDataset.data.push(item[1]);
   });
 
@@ -73,7 +93,7 @@ socket.on('since_start', function(data) {
 });
 
 socket.on('temp_is', function(json) {
-  chart_config.data.labels.push(json['timestamp']);
+  chart_config.data.labels.push(to_date_string(json['timestamp']));
   chart_config.data.datasets[0].data.push(json['temp_is']);
   window.myLine.update();
 });
