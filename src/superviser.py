@@ -2,9 +2,15 @@ import time
 import logging
 import socketio
 from multiprocessing import Process
+from enum import Enum
 
 from src.logger import get_process_logger
 from src.state import HeaterState
+
+class Phase(Enum):
+    PREHEAT = 1
+    APPROACH_HEAT = 2
+    KEEP_HEAT = 3
 
 def _supervise(temp_is, temp_should, running, heating):
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
@@ -12,19 +18,57 @@ def _supervise(temp_is, temp_should, running, heating):
     logger.log(logging.INFO, "Superviser process started")
     s_socket = socketio.Client()
     s_socket.connect("http://localhost:80", namespaces=['/state'])
-    # TODO
+
+    state.update_temp_is()
+    s_socket.emit('temp_is_updated', namespace='/state')
+    if (state.should_preheat()):
+        phase = Phase.PREHEAT
+    elif (state.should_approach_heat()):
+        phase = Phase.APPROACH_HEAT
+    else:
+        phase = Phase.KEEP_HEAT
+
     while(state.is_running()):
         state.update_temp_is()
         s_socket.emit('temp_is_updated', namespace='/state')
-#         # temp_is_rounded = int(round(state.get_temp_is()))
-#         # if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
-#         #     turn_on_heating()
-#         #     heating.value = True
-#         # elif (temp_is_rounded >= temp_should.value):
-#         #     turn_off_heating()
-#         #     heating.value = False
-#         # time.sleep(30)
-        time.sleep(1)
+
+        if (phase == Phase.PREHEAT):
+            if (state.should_preheat()):
+                state.turn_on_heating()
+                state.turn_on_fan()
+                time.sleep(state.get_time_to_heat(4.0))
+            elif (state.should_approach_heat()):
+                phase = Phase.APPROACH_HEAT
+            else:
+                phase = Phase.KEEP_HEAT
+        elif (phase == Phase.APPROACH_HEAT):
+            if (state.should_preheat()):
+                phase = Phase.PREHEAT
+            elif (state.should_approach_heat()):
+                state.turn_on_heating()
+                state.turn_on_fan()
+                time.sleep(state.get_time_to_heat(1.0))
+            else:
+                phase = Phase.KEEP_HEAT
+        else: # KEEP_HEAT
+            if (state.should_preheat()):
+                phase = Phase.PREHEAT
+            elif (state.should_approach_heat()):
+                phase = Phase.APPROACH_HEAT
+            else:
+                time_heating = state.get_time_to_reach(state.get_temp_should())
+                if (time_heating <= 0.5):
+                    state.turn_off_heating()
+                    state.turn_off_fan()
+                    time.sleep(60)
+                    continue
+                state.turn_on_heating()
+                state.turn_on_fan()
+                time.sleep(time_heating)
+                state.turn_off_heating()
+                time.sleep(20)
+                state.turn_off_fan()
+                time.sleep(60 - 20 - time_heating)
 
 class Superviser():
 
