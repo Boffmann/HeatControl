@@ -42,9 +42,10 @@ class StateSocket(Namespace):
     def on_temp_is_updated(self):
         db_conn = DBConnection()
         temp_is = self._state.get_temp_is()
+        temp_should = self._state.get_temp_should()
         curr_time = get_curr_time()
-        db_conn.insert_temp(curr_time, temp_is)
-        emit('temp_is', {'timestamp': curr_time, 'temp_is': temp_is}, broadcast=True)
+        db_conn.insert_temp(curr_time, temp_is, temp_should)
+        emit('temps', {'timestamp': curr_time, 'temp_is': temp_is, 'temp_should': temp_should}, broadcast=True)
         db_conn.close()
 
     def on_heating(self):

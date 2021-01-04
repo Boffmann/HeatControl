@@ -20,7 +20,7 @@ socket.on('state', function(data) {
   }
 });
 
-socket.on('temp_is', function(data) {
+socket.on('temps', function(data) {
   var temp_is = document.querySelector("#is");
   temp_is.innerHTML = data.temp_is;
 });

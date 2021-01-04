@@ -13,14 +13,14 @@ class DBConnection:
         # Create table
 
     def prepare_tables(self):
-        self._conn.execute("CREATE TABLE IF NOT EXISTS temps (date integer, temp real);")
+        self._conn.execute("CREATE TABLE IF NOT EXISTS temps (date integer, temp real, should real);")
 
-    def insert_temp(self, timestamp: int, temp: float):
-        self._conn.execute("INSERT INTO temps VALUES (?, ?);", (timestamp, temp))
+    def insert_temp(self, timestamp: int, temp: float, should: float):
+        self._conn.execute("INSERT INTO temps VALUES (?, ?, ?);", (timestamp, temp, should))
         self._db_conn.commit()
 
     def get_since(self, timestamp: int):
-        self._conn.execute("SELECT date, temp FROM temps WHERE date >= ? ORDER BY date ASC;", (timestamp,))
+        self._conn.execute("SELECT date, temp, should FROM temps WHERE date >= ? ORDER BY date ASC;", (timestamp,))
         return self._conn.fetchall()
 
     def close(self):

@@ -7,7 +7,7 @@ var chart_config = {
   options: {
     responsive: true,
     legend: {
-      display: false
+      display: true
     },
     plugins: {
       title: {
@@ -70,9 +70,17 @@ socket.on('since_start', function(data) {
 
   values = data['values'];
 
-  // Add new dataset
-  var newDataset = {
-    label: 'Temps',
+  // Add new datasets
+  var isDataset = {
+    label: 'Ist',
+    backgroundColor: '#B8BB26',
+    borderColor: '#B8BB26',
+    data: [],
+    fill: false
+  };
+  // Add new datasets
+  var shouldDataset = {
+    label: 'Soll',
     backgroundColor: '#FB4934',
     borderColor: '#FB4934',
     data: [],
@@ -81,16 +89,19 @@ socket.on('since_start', function(data) {
 
   values.forEach(function(item, index) {
     chart_config.data.labels.push(to_date_string(item[0]));
-    newDataset.data.push(item[1]);
+    isDataset.data.push(item[1]);
+    shouldDataset.data.push(item[2]);
   });
 
-  chart_config.data.datasets.push(newDataset);
+  chart_config.data.datasets.push(isDataset);
+  chart_config.data.datasets.push(shouldDataset);
   window.myLine.update();
 });
 
-socket.on('temp_is', function(json) {
+socket.on('temps', function(json) {
   chart_config.data.labels.push(to_date_string(json['timestamp']));
   chart_config.data.datasets[0].data.push(json['temp_is']);
+  chart_config.data.datasets[1].data.push(json['temp_should']);
   window.myLine.update();
 });
 
