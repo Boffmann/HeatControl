@@ -53,20 +53,28 @@ class HeaterState:
         self._running.value = not self._running.value
 
     def turn_off_heating(self):
+        if not self.._running.value:
+            return
         #turn_off_heating()
         self._heating.value = False
         self._socket.emit('heating', namespace='/state')
 
     def turn_on_heating(self):
+        if not self.._running.value:
+            return
         #turn_on_heating()
         self._heating.value = True
         self._socket.emit('heating', namespace='/state')
 
     def turn_on_fan(self):
+        if not self.._running.value:
+            return
         # turn_on_fan()
         pass
 
     def turn_off_fan(self):
+        if not self.._running.value:
+            return
         # turn_off_fan()
         pass
 
