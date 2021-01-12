@@ -34,8 +34,12 @@ def _supervise(temp_is, temp_should, running, heating):
                 time.sleep(state.get_time_to_heat(4.0))
             elif (state.should_approach_heat()):
                 phase = Phase.APPROACH_HEAT
+                state.turn_off_heating()
+                time.sleep(state.get_time_to_heat(4.0))
             else:
                 phase = Phase.KEEP_HEAT
+                state.turn_off_heating()
+                time.sleep(state.get_time_to_heat(4.0))
         elif (phase == Phase.APPROACH_HEAT):
             if (state.should_preheat()):
                 phase = Phase.PREHEAT
@@ -45,6 +49,8 @@ def _supervise(temp_is, temp_should, running, heating):
                 time.sleep(state.get_time_to_heat(1.0))
             else:
                 phase = Phase.KEEP_HEAT
+                state.turn_off_heating()
+                time.sleep(state.get_time_to_heat(4.0))
         else: # KEEP_HEAT
             if (state.should_preheat()):
                 phase = Phase.PREHEAT
@@ -52,7 +58,7 @@ def _supervise(temp_is, temp_should, running, heating):
                 phase = Phase.APPROACH_HEAT
             else:
                 time_heating = state.get_time_to_reach(state.get_temp_should())
-                if (time_heating <= 0.5):
+                if (time_heating <= 1.0):
                     state.turn_off_heating()
                     state.turn_off_fan()
                     time.sleep(60)
@@ -100,7 +106,7 @@ class Superviser():
                 mylogger.error("Cannot stop process - Still alive after timeout")
                 return False
             self._superviser = None
-            #self._state.turn_off_heating()
+            self._state.turn_off_heating()
         except RuntimeError:
             mylogger.error("Cannot stop process - Process wasn't running")
             return False

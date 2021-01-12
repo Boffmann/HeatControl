@@ -6,6 +6,8 @@ import glob
 
 from src.config import InterfaceConfig
 
+# TODO Error handling
+
 interface_config = InterfaceConfig()
 
 _FAN_PIN = interface_config['fan']
@@ -14,11 +16,17 @@ _HEATER_PIN = interface_config['heater']
 GPIO.setup(_FAN_PIN, GPIO.OUT)
 GPIO.setup(_HEATER_PIN, GPIO.OUT)
 
+# Temp sensors use one wire protocol.
 _base_dir = interface_config['temp_sensor_dir']
 device_folder_1 = glob.glob(base_dir + '28*')[0]
 device_file_1 = device_folder_1 + '/w1_slave'
 
 def _read_temp_raw():
+    """ Reads raw string values from the one wire files
+
+    Returns:
+    List of all lines from the one wire files
+    """
     res = []
     f = open(device_file_1, 'r')
     res.append(f.readlines())
@@ -26,6 +34,8 @@ def _read_temp_raw():
     return res
 
 def get_temps -> List[float]:
+    """ Extracts the parts from one wire file's content that encodes the temperature
+    """
     res = []
     lines = read_temp_raw()
     while lines[0][0].strip()[-3:] != 'YES':
@@ -40,6 +50,8 @@ def get_temps -> List[float]:
     return res
 
 def get_temperature() -> float:
+    """ Calculates the overall temperature by conculating mean value
+    """
     temps = get_temps()
 
     return (temps[0] + temps[1]) / 2.0

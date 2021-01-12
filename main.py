@@ -4,12 +4,12 @@ from flask_socketio import SocketIO, emit
 from multiprocessing import Value
 from typing import Dict
 import src.logging as mylogger
+import src.utils as utils
 from src.config import ServerConfig
 from src.state import HeaterState
 from src.superviser import Superviser
 from src.socket import StateSocket
 from src.history import DBConnection
-from src.utils import round_dec_two, get_curr_time
 
 server_config = ServerConfig()
 
@@ -43,14 +43,14 @@ def get_curr_temps():
     temps = get_temps()
     temp_is.value = get_temperature()
     return create_json_response(
-        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1],'3': temps[2],'4': temps[3]},
+        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1]},
         status = 200)
 
 def manage_superviser():
     global state
     if state.is_running() == True:
         if superviser.start():
-            status_socket.set_starttime(get_curr_time())
+            status_socket.set_starttime(utils.get_curr_time())
     else:
         superviser.stop()
 
@@ -85,14 +85,12 @@ def main():
 
     status_socket._state = state
     status_socket._start_stop_superviser = manage_superviser
-    status_socket.set_starttime(get_curr_time())
+    status_socket.set_starttime(utils.get_curr_time())
 
     socketio.run(app, host=host, port=port, debug=debug)
 
     state.connect_to_socket()
     state.turn_off_heating()
-
-    # app.run(host=host, port=port, debug=debug, use_reloader=False)
 
 if __name__ == '__main__':
     main()
