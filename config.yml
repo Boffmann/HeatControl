@@ -9,7 +9,7 @@ database:
 interface:
   fan: 27
   heater: 17
-  temp_sensor_dir: '/sys/bus/w1/devices'
+  temp_sensor_dir: '/sys/bus/w1/devices/'
 
 # Box sizes in meters, power in watts
 environment:
