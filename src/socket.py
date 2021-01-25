@@ -30,7 +30,7 @@ class StateSocket(Namespace):
 
     def on_onoff(self):
         self._state.toggle_running()
-        self._start_stop_superviser()
+        self.start_stop_superviser()
         self.publish_state()
 
     def on_get_since_start(self):

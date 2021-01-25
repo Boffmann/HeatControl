@@ -10,6 +10,8 @@ from src.state import HeaterState
 from src.superviser import Superviser
 from src.socket import StateSocket
 from src.history import DBConnection
+from src.heatcontrol import turn_off_fan_f, turn_off_heating_f
+
 
 server_config = ServerConfig()
 
@@ -53,6 +55,8 @@ def manage_superviser():
             status_socket.set_starttime(utils.get_curr_time())
     else:
         superviser.stop()
+        turn_off_fan_f()
+        turn_off_heating_f()
 
     mylogger.info("Superviser stopped successfully")
 
@@ -90,7 +94,8 @@ def main():
     socketio.run(app, host=host, port=port, debug=debug)
 
     state.connect_to_socket()
-    state.turn_off_heating()
+    turn_off_heating_f()
+    turn_off_fan_f()
 
 if __name__ == '__main__':
     main()

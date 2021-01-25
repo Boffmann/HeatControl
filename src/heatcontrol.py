@@ -69,18 +69,22 @@ def get_temperature() -> float:
 
     return (temps[0] + temps[1]) / 2.0
 
-def turn_on_heating():
+def turn_on_heating_f():
+    # Force turning on heating
     global _HEATER_PIN
     GPIO.output(_HEATER_PIN, GPIO.HIGH)
 
-def turn_off_heating():
+def turn_off_heating_f():
+    # Force turning off heating
     global _HEATER_PIN
     GPIO.output(_HEATER_PIN, GPIO.LOW)
 
-def turn_on_fan():
+def turn_on_fan_f():
+    # Force turning on fan
     global _FAN_PIN
     GPIO.output(_FAN_PIN, GPIO.HIGH)
 
-def turn_off_fan():
+def turn_off_fan_f():
+    # Force turning off fan
     global _FAN_PIN
     GPIO.output(_FAN_PIN, GPIO.LOW)
