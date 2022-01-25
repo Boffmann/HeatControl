@@ -1,0 +1,19 @@
+server:
+  host: '0.0.0.0'
+  port: '80'
+  debug: True
+
+database:
+  filename: 'heater.db'
+
+interface:
+  fan: 27
+  heater: 17
+  temp_sensor_dir: '/sys/bus/w1/devices/'
+
+# Box sizes in meters, power in watts
+environment:
+  box_width: 1
+  box_height: 1
+  box_depth: 1
+  heater_power: 300

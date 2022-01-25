@@ -4,11 +4,21 @@
   <head>
     <title>Heater Pi</title>
     <link rel="stylesheet" type="text/css" href="static/main.css">
+    <link rel="stylesheet" type="text/css" href="static/navbar.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
      <script src="static/main.js"></script>
   </head>
 
   <body>
+
+    <div id="navbar">
+      <ul>
+        <li><a class="active">Startseite</a></li>
+        <li><a href="history">Graph</a></li>
+      </ul>
+    </div>
+
     <div id="content">
       <div id="isHeating"></div>
       <div class="temp_display" id="div_is">Gemessene Temperatur: <b id="is">{{temp_is}}</b>°C</div>

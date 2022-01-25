@@ -1,59 +1,90 @@
-from typing import List
 import RPi.GPIO as GPIO
-import busio
-import digitalio
+from typing import List
 import board
-import adafruit_mcp3xxx.mcp3004 as MCP
-from adafruit_mcp3xxx.analog_in import AnalogIn
+import time
+import glob
 
-_SCK_PIN = board.SCK
-_MISO_PIN = board.MISO
-_MOSI_PIN = board.MOSI
-_CS_PIN = board.D22
-_RELAIS_PIN = 27
+from src.config import InterfaceConfig
 
-GPIO.setup(_RELAIS_PIN, GPIO.OUT)
+# TODO Error handling
 
-# Create SPI Bus
-_spi = busio.SPI(clock=_SCK_PIN, MISO=_MISO_PIN, MOSI=_MOSI_PIN)
+interface_config = InterfaceConfig()
 
-# Creat Chip Select
-_cs = digitalio.DigitalInOut(_CS_PIN)
+_FAN_PIN = interface_config['fan']
+_HEATER_PIN = interface_config['heater']
 
-# Create mcp object
-_mcp = MCP.MCP3004(_spi, _cs)
+GPIO.setup(_FAN_PIN, GPIO.OUT)
+GPIO.setup(_HEATER_PIN, GPIO.OUT)
 
-# Create analog input channels
-_channel0 = AnalogIn(_mcp, MCP.P0)
-_channel1 = AnalogIn(_mcp, MCP.P1)
-_channel2 = AnalogIn(_mcp, MCP.P2)
-_channel3 = AnalogIn(_mcp, MCP.P3)
+# Temp sensors use one wire protocol.
+base_dir = interface_config['temp_sensor_dir']
+device_folder_1 = glob.glob(base_dir + '28*')[0]
+device_file_1 = device_folder_1 + '/w1_slave'
+device_folder_2 = glob.glob(base_dir + '28*')[1]
+device_file_2 = device_folder_2 + '/w1_slave'
 
-def __value_to_temperature(value):
-    supply_voltage = 4.5
-    max_digital_value = 64000
-    factor = 100.0
-    return (supply_voltage * (value / max_digital_value)) * factor
+def read_temp_raw():
+    """ Reads raw string values from the one wire files
+
+    Returns:
+    List of all lines from the one wire files
+    """
+    res = []
+    f = open(device_file_1, 'r')
+    res.append(f.readlines())
+    f.close()
+    f = open(device_file_2, 'r')
+    res.append(f.readlines())
+    f.close()
+    return res
 
 def get_temps() -> List[float]:
-    global _channel0, _channel1, _channel2, _channel3
+    """ Extracts the parts from one wire file's content that encodes the temperature
+    """
+    res = []
+    lines = read_temp_raw()
+    while lines[0][0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[0][1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[0][1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        res.append(temp_c)
+    while lines[1][0].strip()[-3:] != 'YES':
+        time.sleep(0.2)
+        lines = read_temp_raw()
+    equals_pos = lines[1][1].find('t=')
+    if equals_pos != -1:
+        temp_string = lines[1][1][equals_pos+2:]
+        temp_c = float(temp_string) / 1000.0
+        res.append(temp_c)
 
-    ch0 = __value_to_temperature(_channel0.value)
-    ch1 = __value_to_temperature(_channel1.value)
-    ch2 = __value_to_temperature(_channel2.value)
-    ch3 = __value_to_temperature(_channel3.value)
-
-    return [ch0, ch1, ch2, ch3]
+    return res
 
 def get_temperature() -> float:
+    """ Calculates the overall temperature by conculating mean value
+    """
     temps = get_temps()
 
-    return (temps[0] + temps[1] + temps[2] + temps[3]) / 4.0
+    return (temps[0] + temps[1]) / 2.0
 
-def turn_on_heating():
-    global _RELAIS_PIN
-    GPIO.output(_RELAIS_PIN, GPIO.HIGH)
+def turn_on_heating_f():
+    # Force turning on heating
+    global _HEATER_PIN
+    GPIO.output(_HEATER_PIN, GPIO.HIGH)
 
-def turn_off_heating():
-    global _RELAIS_PIN
-    GPIO.output(_RELAIS_PIN, GPIO.LOW)
+def turn_off_heating_f():
+    # Force turning off heating
+    global _HEATER_PIN
+    GPIO.output(_HEATER_PIN, GPIO.LOW)
+
+def turn_on_fan_f():
+    # Force turning on fan
+    global _FAN_PIN
+    GPIO.output(_FAN_PIN, GPIO.HIGH)
+
+def turn_off_fan_f():
+    # Force turning off fan
+    global _FAN_PIN
+    GPIO.output(_FAN_PIN, GPIO.LOW)

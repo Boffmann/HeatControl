@@ -1,83 +1,43 @@
-import time
-import multiprocessing
+import logging
 from flask import Flask, render_template, request, json
+from flask_socketio import SocketIO, emit
+from multiprocessing import Value
 from typing import Dict
-from src.heatcontrol import get_temperature, turn_on_heating, turn_off_heating, get_temps
+import src.logging as mylogger
+import src.utils as utils
+from src.config import ServerConfig
+from src.state import HeaterState
+from src.superviser import Superviser
+from src.socket import StateSocket
+from src.history import DBConnection
+from src.heatcontrol import turn_off_fan_f, turn_off_heating_f
 
-host='0.0.0.0'
-port='80'
-debug=True
+
+server_config = ServerConfig()
+
+host=server_config['host']
+port=server_config['port']
+debug=server_config['debug']
 tolerance=0.05
 
-temp_is = multiprocessing.Value('d')
-temp_should = multiprocessing.Value('d')
-running = multiprocessing.Value('b')
-heating = multiprocessing.Value('b')
-superviser: multiprocessing.Process
+state: HeaterState
+superviser: Superviser
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'super_secret'
 
-@app.route('/', methods=['GET', 'POST'])
+socketio = SocketIO(app, logger=True, engineio_logger=True)
+status_socket = StateSocket('/state')
+socketio.on_namespace(status_socket)
+
+@app.route('/', methods=['GET'])
 def index():
-    global temp_is, temp_should, running, heating, superviser
+    global state, superviser
+    return render_template('main.html', temp_is=state.get_temp_is(), temp_should=state.get_temp_should())
 
-    if request.method == 'POST':
-        type = request.form['type']
-        if type == '+':
-            temp_should.value += 1.0
-        elif type == '-':
-            temp_should.value -= 1.0
-        elif type == 'onoff':
-            running.value = not running.value
-            if running.value == True:
-                if superviser == None:
-                    superviser = multiprocessing.Process(target=supervise, args=(temp_is, temp_should, running, heating))
-                    try:
-                        superviser.start()
-                    except RuntimeError:
-                        superviser = None
-                        return create_json_response(
-                            response = {'success': False, 'reason': 'Process already running'},
-                            status = 500)
-            else:
-                try:
-                    superviser.join(timeout=5)
-                    if superviser is not None and superviser.is_alive():
-                        return create_json_response(
-                            response = {'success': False, 'reason': 'Failed to stop process.'},
-                            status = 500)
-                    superviser = None
-                    turn_off_heating()
-                    heating.value = False
-                except RuntimeError:
-                    return create_json_response(
-                        response = {'success': False, 'reason': 'Cannot stop. Process not running.'},
-                        status = 500)
-
-        return create_json_response(
-            response = {'success': True},
-            status = 200
-        )
-    elif request.method == 'GET':
-        return render_template('main.html', temp_is=temp_is.value, temp_should=temp_should.value)
-
-
-def round_dec_two(value: float):
-    return round(value, 2)
-
-@app.route('/get_status', methods=['GET'])
-def get_status():
-    global temp_should, running, heating
-    return create_json_response(
-        response = {'success': True, 'temp_should': round_dec_two(temp_should.value), 'running': running.value, 'heating': heating.value},
-        status = 200)
-
-@app.route('/get_temp', methods=['GET'])
-def get_curr_temp():
-    global temp_is, temp_should, running
-    return create_json_response(
-        response = {'success': True, 'temp_is': round_dec_two(temp_is.value)},
-        status = 200)
+@app.route('/history', methods=['GET'])
+def history():
+    return render_template('history.html')
 
 @app.route('/temperatur', methods=['GET'])
 def get_curr_temps():
@@ -85,20 +45,20 @@ def get_curr_temps():
     temps = get_temps()
     temp_is.value = get_temperature()
     return create_json_response(
-        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1],'3': temps[2],'4': temps[3]},
+        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1]},
         status = 200)
 
-def supervise(temp_is, temp_should, running, heating):
-    while(running.value):
-        temp_is.value = get_temperature()
-        temp_is_rounded = int(round(temp_is.value))
-        if (temp_is_rounded < (temp_should.value - temp_should.value * tolerance)):
-            turn_on_heating()
-            heating.value = True
-        elif (temp_is_rounded >= temp_should.value):
-            turn_off_heating()
-            heating.value = False
-        time.sleep(30)
+def manage_superviser():
+    global state
+    if state.is_running() == True:
+        if superviser.start():
+            status_socket.set_starttime(utils.get_curr_time())
+    else:
+        superviser.stop()
+        turn_off_fan_f()
+        turn_off_heating_f()
+
+    mylogger.info("Superviser stopped successfully")
 
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(
@@ -108,20 +68,34 @@ def create_json_response(response: Dict[str, object], status: int):
     )
     return response
 
-
 def main():
-    global temp_is, temp_should, running, heating, superviser
+    global state, superviser, status_socket
 
-    temp_is.value = get_temperature()
+    temp_is = Value('d')
+    temp_should = Value('d')
+    running = Value('b')
+    heating = Value('b')
     temp_should.value = 40.0
     running.value = False
     heating.value = False
 
-    turn_off_heating()
+    db_conn = DBConnection()
+    db_conn.prepare_tables()
+    db_conn.close()
 
-    superviser = None
+    state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
 
-    app.run(host=host, port=port, debug=debug, use_reloader=False)
+    superviser = Superviser(state=state)
+
+    status_socket._state = state
+    status_socket._start_stop_superviser = manage_superviser
+    status_socket.set_starttime(utils.get_curr_time())
+
+    socketio.run(app, host=host, port=port, debug=debug)
+
+    state.connect_to_socket()
+    turn_off_heating_f()
+    turn_off_fan_f()
 
 if __name__ == '__main__':
     main()
