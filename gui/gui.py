@@ -1,18 +1,25 @@
+from turtle import bgcolor
 import PySimpleGUI as sg
 import paramiko as pm
 import time
+from paramiko import BadHostKeyException, AuthenticationException, SSHException
 import yaml
 from os import path
 from sys import exit
 
+txt_color = "#282828"
+button_color = "#458588"
+
 def create_popup(text):
 
+    bg_color = "#d79921"
+
     layout = [
-        [sg.Text(text, font=('Any 15'))],
-        [sg.Button('OK', size=(10, 1))]
+        [sg.Text(text, font=('Any 15'), background_color=bg_color, text_color=txt_color)],
+        [sg.Button('OK', size=(10, 1), font=('Any 15'), button_color=(txt_color, button_color))]
     ]
     
-    window = sg.Window('INFO', layout, margins=(50, 25))
+    window = sg.Window('INFO', layout, margins=(50, 25), background_color=bg_color)
     
     while True:
         event, values = window.read()
@@ -45,7 +52,7 @@ def execute_ssh_command(command):
     ssh = None
 
     try:        
-        ssh = pm.SSHClient
+        ssh = pm.SSHClient()
         ssh.set_missing_host_key_policy(pm.AutoAddPolicy())
 
         ssh.connect(host, port, username, password)
@@ -58,6 +65,12 @@ def execute_ssh_command(command):
 
         stdoutstring = stdout.readlines()
         stderrstring = stderr.readlines()
+    except BadHostKeyException:
+        create_popup("HeatControl server's host key cound not be verified")
+    except AuthenticationException:
+        create_popup("Authenticating with HeatControl server failed. Wrong Username/Password?")
+    except Exception:
+        create_popup("An unknown error occured while connecting to HeatControl server or executing a command")
     finally:
         if ssh is not None:
             ssh.close()
@@ -71,9 +84,12 @@ def stop_service():
     execute_ssh_command("stop_heat_control")
 
 
-layout = [[sg.Button("Start Service", size=(10, 2)), sg.Button("Stop Service", size=(10, 2))]]
+layout = [[
+        sg.Button("Start Service", size=(10, 2), font=('Any 15'), button_color=(txt_color, button_color)),
+        sg.Button("Stop Service",  size=(10, 2), font=('Any 15'), button_color=(txt_color, button_color))
+    ]]
 
-window = sg.Window(title="HeatControl", layout=layout, margins=(100, 50)).Finalize()
+window = sg.Window(title="HeatControl", layout=layout, margins=(100, 50), background_color="#98971a").Finalize()
 
 while True:
     event, values = window.read()
