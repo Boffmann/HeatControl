@@ -20,8 +20,8 @@ def _should_approach_heat(state):
 def _should_keep_heat(state):
     return not _should_preheat(state) and not _should_approach_heat(state)
 
-def _get_time_to_heat(state: HeaterState, temp_delta: float):
-    return utils.get_time_to_heat(state.get_temp_is(), state.get_temp_is() + temp_delta)
+def _get_time_to_heat_delta(state: HeaterState, delta: float):
+    return utils.get_time_to_heat(state.get_temp_is(), state.get_temp_is() + delta)
 
 def _get_time_to_reach_temp_should(state: HeaterState):
     return utils.get_time_to_heat(state.get_temp_is(), state.get_temp_should())
@@ -51,14 +51,14 @@ def _supervise(temp_is, temp_should, running, heating):
                 continue
             state.turn_on_heating()
             state.turn_on_fan()
-            time.sleep(_get_time_to_heat(state, 4.0))
+            time.sleep(_get_time_to_heat_delta(state, delta=4.0))
         elif (phase == Phase.APPROACH_HEAT):
             if (_should_keep_heat(state)):
                 phase = Phase.KEEP_HEAT
                 continue
             state.turn_on_heating()
             state.turn_on_fan()
-            time.sleep(_get_time_to_heat(state, 1.0))
+            time.sleep(_get_time_to_heat_delta(state, delta=1.0))
         elif (phase == Phase.KEEP_HEAT):
             time_heating = _get_time_to_reach_temp_should(state)
             if (time_heating <= 1.0):

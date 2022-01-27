@@ -66,11 +66,11 @@ def get_temps() -> List[float]:
 
 def get_temperature() -> float:
     """ 
-    Calculates the overall temperature by conculating mean value
+    Calculates the overall temperature by conculating mean value. Rounds result to two digits after comma
     """
     temps = get_temps()
-
-    return (temps[0] + temps[1]) / 2.0
+    mean_temp = (temps[0] + temps[1]) / 2.0
+    return round(mean_temp, 2)
 
 def turn_on_heating_f():
     # Force turning on heating

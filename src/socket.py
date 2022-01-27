@@ -2,7 +2,7 @@ from flask_socketio import Namespace, emit
 
 from src.state import HeaterState
 from src.superviser import Superviser
-from src.utils import round_dec_two, get_curr_time
+from src.utils import get_curr_time
 from src.history import DBConnection
 from src.utils import get_curr_time
 
@@ -60,4 +60,4 @@ class StateSocket(Namespace):
         self._publish_state()
 
     def _publish_state(self):
-        emit('state', {'temp_should': round_dec_two(self._state.get_temp_should()), 'running': self._state.is_running(), 'heating': self._state.is_heating()}, broadcast=True)
+        emit('state', {'temp_should': self._state.get_temp_should(), 'running': self._state.is_running(), 'heating': self._state.is_heating()}, broadcast=True)
