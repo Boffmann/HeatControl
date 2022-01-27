@@ -4,7 +4,7 @@ import board
 import time
 import glob
 
-from src.config import InterfaceConfig
+from heatcontrol.config import InterfaceConfig
 
 # TODO Error handling
 

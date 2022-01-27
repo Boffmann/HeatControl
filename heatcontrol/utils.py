@@ -1,6 +1,6 @@
 import time
 
-from src.config import EnvironmentConfig
+from heatcontrol.config import EnvironmentConfig
 
 env_config = EnvironmentConfig()
 

@@ -1,10 +1,10 @@
 from flask_socketio import Namespace, emit
 
-from src.state import HeaterState
-from src.superviser import Superviser
-from src.utils import get_curr_time
-from src.history import DBConnection
-from src.utils import get_curr_time
+from heatcontrol.state import HeaterState
+from heatcontrol.superviser import Superviser
+from heatcontrol.utils import get_curr_time
+from heatcontrol.history import DBConnection
+from heatcontrol.utils import get_curr_time
 
 class StateSocket(Namespace):
 

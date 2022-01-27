@@ -1,7 +1,8 @@
 from multiprocessing import Value
 import socketio
 
-from src.heatcontrol import get_temperature, turn_on_heating_f, turn_off_heating_f, turn_on_fan_f, turn_off_fan_f
+import heatcontrol.heatcontrol as hc
+import heatcontrol.logging as logger
 
 class HeaterState:
 
@@ -14,7 +15,7 @@ class HeaterState:
 
         self._socket = socketio.Client()
 
-        self._temp_is.value = get_temperature()
+        self._temp_is.value = hc.get_temperature()
 
     def connect_to_socket(self):
         self._socket.connect("http://localhost:80", namespaces=['/state'])
@@ -32,7 +33,7 @@ class HeaterState:
         return self._temp_should.value
 
     def update_temp_is(self):
-        self._temp_is.value = get_temperature()
+        self._temp_is.value = hc.get_temperature()
         self._socket.emit('temp_is_updated', namespace='/state')
 
     def increate_temp_should(self):
@@ -47,24 +48,28 @@ class HeaterState:
 
     def turn_off_heating(self):
         if not self._running.value:
+            logger.warning("Cannot turn off heating when not running")
             return
-        turn_off_heating_f()
+        hc.turn_off_heating_f()
         self._heating.value = False
         self._socket.emit('heating', namespace='/state')
 
     def turn_on_heating(self):
         if not self._running.value:
+            logger.warning("Cannot turn on heating when not running")
             return
-        turn_on_heating_f()
+        hc.turn_on_heating_f()
         self._heating.value = True
         self._socket.emit('heating', namespace='/state')
 
     def turn_on_fan(self):
         if not self._running.value:
+            logger.warning("Cannot turn on fan when not running")
             return
-        turn_on_fan_f()
+        hc.turn_on_fan_f()
 
     def turn_off_fan(self):
         if not self._running.value:
+            logger.warning("Cannot turn off fan when not running")
             return
-        turn_off_fan_f()
+        hc.turn_off_fan_f()

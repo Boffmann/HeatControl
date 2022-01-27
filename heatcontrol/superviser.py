@@ -2,9 +2,9 @@ import time
 from multiprocessing import Process
 from enum import Enum
 
-import src.logging as mylogger
-import src.utils as utils
-from src.state import HeaterState
+import heatcontrol.logging as mylogger
+import heatcontrol.utils as utils
+from heatcontrol.state import HeaterState
 
 class Phase(Enum):
     PREHEAT = 1

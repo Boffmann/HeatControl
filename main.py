@@ -3,11 +3,11 @@ from flask import Flask, render_template, json
 from flask_socketio import SocketIO
 from multiprocessing import Value
 from typing import Dict
-from src.config import ServerConfig
-from src.state import HeaterState
-from src.socket import StateSocket
-from src.history import DBConnection
-from src.heatcontrol import get_temps, get_temperature
+from heatcontrol.config import ServerConfig
+from heatcontrol.state import HeaterState
+from heatcontrol.socket import StateSocket
+from heatcontrol.history import DBConnection
+from heatcontrol.heatcontrol import get_temps, get_temperature
 
 
 server_config = ServerConfig()

@@ -2,8 +2,8 @@ import sqlite3
 import traceback
 import sys
 
-from src.config import DatabaseConfig
-import src.logging as mylogger
+from heatcontrol.config import DatabaseConfig
+import heatcontrol.logging as mylogger
 
 database_config = DatabaseConfig()
 
