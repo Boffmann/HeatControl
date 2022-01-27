@@ -1,16 +1,13 @@
 import logging
-from flask import Flask, render_template, request, json
-from flask_socketio import SocketIO, emit
+from flask import Flask, render_template, json
+from flask_socketio import SocketIO
 from multiprocessing import Value
 from typing import Dict
-import src.logging as mylogger
-import src.utils as utils
 from src.config import ServerConfig
 from src.state import HeaterState
-from src.superviser import Superviser
 from src.socket import StateSocket
 from src.history import DBConnection
-from src.heatcontrol import turn_off_fan_f, turn_off_heating_f
+from src.heatcontrol import get_temps, get_temperature
 
 
 server_config = ServerConfig()
@@ -21,7 +18,8 @@ debug=server_config['debug']
 tolerance=0.05
 
 state: HeaterState
-superviser: Superviser
+temp_is: Value
+temp_should: Value
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super_secret'
@@ -32,7 +30,7 @@ socketio.on_namespace(status_socket)
 
 @app.route('/', methods=['GET'])
 def index():
-    global state, superviser
+    global state
     return render_template('main.html', temp_is=state.get_temp_is(), temp_should=state.get_temp_should())
 
 @app.route('/history', methods=['GET'])
@@ -48,18 +46,6 @@ def get_curr_temps():
         response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1]},
         status = 200)
 
-def manage_superviser():
-    global state
-    if state.is_running() == True:
-        if superviser.start():
-            status_socket.set_starttime(utils.get_curr_time())
-    else:
-        superviser.stop()
-        turn_off_fan_f()
-        turn_off_heating_f()
-
-    mylogger.info("Superviser stopped successfully")
-
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(
         response=json.dumps(response),
@@ -69,12 +55,13 @@ def create_json_response(response: Dict[str, object], status: int):
     return response
 
 def main():
-    global state, superviser, status_socket
+    global state, status_socket
 
     temp_is = Value('d')
     temp_should = Value('d')
     running = Value('b')
     heating = Value('b')
+
     temp_should.value = 40.0
     running.value = False
     heating.value = False
@@ -85,17 +72,11 @@ def main():
 
     state = HeaterState(temp_is=temp_is, should=temp_should, running=running, heating=heating)
 
-    superviser = Superviser(state=state)
-
-    status_socket._state = state
-    status_socket._start_stop_superviser = manage_superviser
-    status_socket.set_starttime(utils.get_curr_time())
+    status_socket.initialize(state)
 
     socketio.run(app, host=host, port=port, debug=debug)
 
     state.connect_to_socket()
-    turn_off_heating_f()
-    turn_off_fan_f()
 
 if __name__ == '__main__':
     main()

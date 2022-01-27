@@ -1,8 +1,7 @@
 from multiprocessing import Value
 import socketio
 
-from src.heatcontrol import get_temperature, turn_on_heating_f, turn_off_heating_f, get_temps, turn_on_fan_f, turn_off_fan_f
-from src.utils import get_time_to_heat
+from src.heatcontrol import get_temperature, turn_on_heating_f, turn_off_heating_f, turn_on_fan_f, turn_off_fan_f
 
 class HeaterState:
 
@@ -29,13 +28,6 @@ class HeaterState:
     def get_temp_is(self):
         return self._temp_is.value
 
-    def should_preheat(self):
-        return self.get_temp_is() < self.get_temp_should() - 5.0
-
-    def should_approach_heat(self):
-        return (self.get_temp_is() >= self.get_temp_should() - 5.0
-                and self.get_temp_is() <  self.get_temp_should())
-
     def get_temp_should(self):
         return self._temp_should.value
 
@@ -51,6 +43,7 @@ class HeaterState:
 
     def toggle_running(self):
         self._running.value = not self._running.value
+        return self._running.value
 
     def turn_off_heating(self):
         if not self._running.value:
@@ -75,9 +68,3 @@ class HeaterState:
         if not self._running.value:
             return
         turn_off_fan_f()
-
-    def get_time_to_heat(self, temp_delta: float):
-        return get_time_to_heat(self.get_temp_is(), self.get_temp_is() + temp_delta)
-
-    def get_time_to_reach(self, temp: float):
-        return get_time_to_heat(self.get_temp_is(), temp)

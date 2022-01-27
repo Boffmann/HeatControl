@@ -7,9 +7,9 @@ import src.logging as mylogger
 
 database_config = DatabaseConfig()
 
-
 class DBConnection:
-    """ Used to write and read temperature values from database file
+    """
+    Used to write and read temperature values from database file
     """
 
     def __init__(self):
@@ -34,7 +34,8 @@ class DBConnection:
             mylogger.error(traceback.format_exception(exc_type, exc_value, exc_tb))
 
     def prepare_tables(self):
-        """ Create new temps table if it does not currently exist in database file
+        """ 
+        Create new temps table if it does not currently exist in database file
         """
         self._execute("CREATE TABLE IF NOT EXISTS temps (date integer, temp real, should real);")
 

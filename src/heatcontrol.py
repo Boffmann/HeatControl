@@ -24,7 +24,8 @@ device_folder_2 = glob.glob(base_dir + '28*')[1]
 device_file_2 = device_folder_2 + '/w1_slave'
 
 def read_temp_raw():
-    """ Reads raw string values from the one wire files
+    """ 
+    Reads raw string values from the one wire files
 
     Returns:
     List of all lines from the one wire files
@@ -39,7 +40,8 @@ def read_temp_raw():
     return res
 
 def get_temps() -> List[float]:
-    """ Extracts the parts from one wire file's content that encodes the temperature
+    """ 
+    Extracts the parts from one wire file's content that encodes the temperature
     """
     res = []
     lines = read_temp_raw()
@@ -63,7 +65,8 @@ def get_temps() -> List[float]:
     return res
 
 def get_temperature() -> float:
-    """ Calculates the overall temperature by conculating mean value
+    """ 
+    Calculates the overall temperature by conculating mean value
     """
     temps = get_temps()
 
