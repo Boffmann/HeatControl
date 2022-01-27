@@ -2,7 +2,7 @@ from turtle import bgcolor
 import PySimpleGUI as sg
 import paramiko as pm
 import time
-from paramiko import BadHostKeyException, AuthenticationException, SSHException
+from paramiko import BadHostKeyException, AuthenticationException
 import yaml
 from os import path
 from sys import exit
@@ -16,7 +16,9 @@ def create_popup(text):
 
     layout = [
         [sg.Text(text, font=('Any 15'), background_color=bg_color, text_color=txt_color)],
-        [sg.Button('OK', size=(10, 1), font=('Any 15'), button_color=(txt_color, button_color))]
+        [sg.Column(
+            [[sg.Button('OK', size=(10, 1), font=('Any 15'), button_color=(txt_color, button_color))]],
+            justification='center')]
     ]
     
     window = sg.Window('INFO', layout, margins=(50, 25), background_color=bg_color)
@@ -39,7 +41,7 @@ def parse_ssh_config():
             username = config['username']
             password = config['password']
     except OSError:
-        create_popup("Cound not open/read ssh config file. Are you sure the file exists?")
+        create_popup("Cound not open/read ~/.heat_control_ssh.yml. Are you sure the file exists?")
         exit()
     return (host, port, username, password)
 
@@ -63,8 +65,7 @@ def execute_ssh_command(command):
         while not stdout.channel.exit_status_ready() and not stdout.channel.recv_ready():
             time.sleep(1)
 
-        stdoutstring = stdout.readlines()
-        stderrstring = stderr.readlines()
+        return stdout.channel.recv_exit_status()
     except BadHostKeyException:
         create_popup("HeatControl server's host key cound not be verified")
     except AuthenticationException:
@@ -75,13 +76,23 @@ def execute_ssh_command(command):
         if ssh is not None:
             ssh.close()
 
-    return stdoutstring, stderrstring
-
 def start_service():
-    execute_ssh_command("start_heat_control")
+    exit_code = execute_ssh_command("start_heat_control")
+    if exit_code == 0:
+        create_popup("Started HeatControl")
+    elif exit_code == 1:
+        create_popup("Error: Could not start HeatControl. Server already running.")
+    else:
+        create_popup("Error: Could not start HeatControl.")
 
 def stop_service():
-    execute_ssh_command("stop_heat_control")
+    exit_code = execute_ssh_command("stop_heat_control")
+    if exit_code == 0:
+        create_popup("Stopped HeatControl")
+    elif exit_code == 1:
+        create_popup("Error: Could not stop HeatControl. Server is not running.")
+    else:
+        create_popup("Error: Could not stop HeatControl.")
 
 
 layout = [[

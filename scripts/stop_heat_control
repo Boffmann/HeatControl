@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Stops running heatcontrol server
+# Exits 0 on success
+# Exits 1 when heatcontrol server is not running
+
+PID=$(cat ~/.heatcontrol.pid)
+if ps -p $PID > /dev/null; then # Process with PID is running
+    kill -2 $PID
+    exit 0
+fi
+exit 1

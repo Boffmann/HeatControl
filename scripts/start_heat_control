@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Run heatcontrol server and store the process' PID
+# Exits 0 on success
+# Exits 1 when heatcontrol server already running
+
+PID=$(cat ~/.heatcontrol.pid > /dev/null 2>&1)
+if [[ -z $? ]]; then # PID file found
+    if ps -p $PID > /dev/null; then # Process with PID is running
+        exit 1
+    fi
+fi
+nohup python3 -u ~/HeatControl/main.py > /dev/null 2>&1 & echo $! > ~/.heatcontrol.pid  
+exit 0
