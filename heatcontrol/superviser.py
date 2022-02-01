@@ -4,7 +4,7 @@ from enum import Enum
 
 import heatcontrol.logging as mylogger
 import heatcontrol.utils as utils
-from heatcontrol.state import HeaterState
+from heatcontrol.test_state import HeaterState
 
 class Phase(Enum):
     PREHEAT = 1

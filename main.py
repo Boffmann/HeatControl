@@ -4,10 +4,10 @@ from flask_socketio import SocketIO
 from multiprocessing import Value
 from typing import Dict
 from heatcontrol.config import ServerConfig
-from heatcontrol.state import HeaterState
+from heatcontrol.test_state import HeaterState
 from heatcontrol.socket import StateSocket
 from heatcontrol.history import DBConnection
-from heatcontrol.heatcontrol import get_temps, get_temperature
+#from heatcontrol.heatcontrol import get_temps, get_temperature
 
 
 server_config = ServerConfig()
@@ -37,14 +37,14 @@ def index():
 def history():
     return render_template('history.html')
 
-@app.route('/temperatur', methods=['GET'])
+"""@app.route('/temperatur', methods=['GET'])
 def get_curr_temps():
     global temp_is, temp_should
     temps = get_temps()
     temp_is.value = get_temperature()
     return create_json_response(
         response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1]},
-        status = 200)
+        status = 200)"""
 
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(

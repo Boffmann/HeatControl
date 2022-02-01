@@ -1,6 +1,6 @@
 from flask_socketio import Namespace, emit
 
-from heatcontrol.state import HeaterState
+from heatcontrol.test_state import HeaterState
 from heatcontrol.superviser import Superviser
 from heatcontrol.utils import get_curr_time
 from heatcontrol.history import DBConnection
