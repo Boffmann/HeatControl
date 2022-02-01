@@ -1,4 +1,3 @@
-import logging
 from flask import Flask, render_template, json
 from flask_socketio import SocketIO
 from multiprocessing import Value
@@ -7,7 +6,6 @@ from heatcontrol.config import ServerConfig
 from heatcontrol.test_state import HeaterState
 from heatcontrol.socket import StateSocket
 from heatcontrol.history import DBConnection
-#from heatcontrol.heatcontrol import get_temps, get_temperature
 
 
 server_config = ServerConfig()
@@ -18,8 +16,6 @@ debug=server_config['debug']
 tolerance=0.05
 
 state: HeaterState
-temp_is: Value
-temp_should: Value
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'super_secret'
@@ -36,15 +32,6 @@ def index():
 @app.route('/history', methods=['GET'])
 def history():
     return render_template('history.html')
-
-"""@app.route('/temperatur', methods=['GET'])
-def get_curr_temps():
-    global temp_is, temp_should
-    temps = get_temps()
-    temp_is.value = get_temperature()
-    return create_json_response(
-        response = {'temp_is': temp_is.value, 'temp_should': temp_should.value, '1': temps[0],'2': temps[1]},
-        status = 200)"""
 
 def create_json_response(response: Dict[str, object], status: int):
     response = app.response_class(
@@ -75,8 +62,6 @@ def main():
     status_socket.initialize(state)
 
     socketio.run(app, host=host, port=port, debug=debug)
-
-    state.connect_to_socket()
 
 if __name__ == '__main__':
     main()

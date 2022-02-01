@@ -15,10 +15,10 @@ def _should_preheat(state):
     return state.get_temp_is() < state.get_temp_should() - 5.0
 
 def _should_approach_heat(state):
-    return state.get_temp_is() < state.get_temp_should()
+    return not _should_preheat(state) and state.get_temp_is() < state.get_temp_should()
 
 def _should_keep_heat(state):
-    return not _should_preheat(state) and not _should_approach_heat(state)
+    return not _should_approach_heat(state)
 
 def _get_time_to_heat_delta(state: HeaterState, delta: float):
     return utils.get_time_to_heat(state.get_temp_is(), state.get_temp_is() + delta)
@@ -32,8 +32,6 @@ def _supervise(temp_is, temp_should, running, heating):
     mylogger.info("Superviser process started")
 
     state.update_temp_is()
-    state.turn_off_heating()
-    state.turn_off_fan()
     if (_should_preheat(state)):
         phase = Phase.PREHEAT
     elif (_should_approach_heat(state)):
@@ -110,6 +108,7 @@ class Superviser():
                 return False
             self._superviser = None
             self._state.turn_off_heating()
+            self._state.turn_off_fan()
         except RuntimeError:
             mylogger.error("Cannot stop process - Process wasn't running")
             return False

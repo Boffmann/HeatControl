@@ -4,7 +4,7 @@ from heatcontrol.test_state import HeaterState
 from heatcontrol.superviser import Superviser
 from heatcontrol.utils import get_curr_time
 from heatcontrol.history import DBConnection
-from heatcontrol.utils import get_curr_time
+import heatcontrol.logging as logger
 
 class StateSocket(Namespace):
 
@@ -14,14 +14,17 @@ class StateSocket(Namespace):
 
     def initialize(self, state: HeaterState):
         self._state = state
+        self._start_time = get_curr_time()
         self._superviser = Superviser(state=state)
 
     def on_connect(self):
-        print("Connected")
+        logger.info("Connected")
+        self._state.connect_to_socket()
         self._publish_state()
 
     def on_disconnect(self):
-        print("Disconnected")
+        logger.info("Disconnected")
+        self._state.disconnect_from_socket()
 
     def on_raise(self):
         self._state.increate_temp_should()

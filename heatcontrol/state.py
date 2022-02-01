@@ -14,11 +14,21 @@ class HeaterState:
         self._heating = heating
 
         self._socket = socketio.Client()
+        self._connected = False
 
         self._temp_is.value = hc.get_temperature()
 
     def connect_to_socket(self):
+        if self._connected:
+            return
         self._socket.connect("http://localhost:80", namespaces=['/state'])
+        self._connected = True
+
+    def disconnect_from_socket(self):
+        if not self._connected:
+            return
+        self._socket.disconnect()
+        self._connected = False
 
     def is_running(self):
         return self._running.value
@@ -47,9 +57,6 @@ class HeaterState:
         return self._running.value
 
     def turn_off_heating(self):
-        if not self._running.value:
-            logger.warning("Cannot turn off heating when not running")
-            return
         hc.turn_off_heating_f()
         self._heating.value = False
         self._socket.emit('heating', namespace='/state')
@@ -69,7 +76,4 @@ class HeaterState:
         hc.turn_on_fan_f()
 
     def turn_off_fan(self):
-        if not self._running.value:
-            logger.warning("Cannot turn off fan when not running")
-            return
         hc.turn_off_fan_f()

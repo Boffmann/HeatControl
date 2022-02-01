@@ -11,12 +11,23 @@ class HeaterState:
         self._heating = heating
 
         self._socket = socketio.Client()
+        self._connected = False
 
-        self._temp_is.value = 15
+        self._temp_is.value = 25
 
     def connect_to_socket(self):
+        if self._connected:
+            return
         self._socket.connect("http://localhost:80", namespaces=['/state'])
+        self._connected = True
         print("Connected to socket")
+
+    def disconnect_from_socket(self):
+        if not self._connected:
+            return
+        self._socket.disconnect()
+        self._connected = False
+        print("Disconnected from socket")
 
     def is_running(self):
         return self._running.value
@@ -45,9 +56,6 @@ class HeaterState:
         return self._running.value
 
     def turn_off_heating(self):
-        if not self._running.value:
-            print("Cannot turn off heating when not running")
-            return
         print("Turned off heating")
         self._heating.value = False
         self._socket.emit('heating', namespace='/state')
@@ -67,7 +75,4 @@ class HeaterState:
         print("Turned on fan")
 
     def turn_off_fan(self):
-        if not self._running.value:
-            print("Cannot turn off fan when not running")
-            return
         print("Turned off fan")
